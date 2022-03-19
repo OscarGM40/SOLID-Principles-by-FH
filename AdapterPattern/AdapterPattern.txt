@@ -1,0 +1,144 @@
+
+
+Sources:
+1- https://www.youtube.com/watch?v=vfOLVx3fI8o&ab_channel=TheodoreAnderson
+
+El patrón Model-Adapter ayuda q que dos clases/interfaces incompatibles trabajen juntas.Este patrón permite que suceda esto convirtiendo la interfaz de una clase en una interfaz que esperan los clientes.
+La interfaz siempre va a ser local a mi aplicación,fijate que también se crea una clase que recibe esa interfaz por argumento.Despues las clases que quiera implementarán esta interfaz y podré pasar una instancia de estas clases como argumento a esa clase que recibe un argumento de ese tipo(ya que implementan la interfaz).
+
+Bien,veamos el ejemplo.Partimos de dos clases que cada una desarrolla una interfaz,son muy similares,una muestra los dias trabajados y otra las horas:
+interface IEmployee {
+  getYearsWorked(): number;
+
+}
+
+interface IContractor {
+  getHoursWorked(): number;
+}
+
+class Employee implements IEmployee {
+  private yearsWorked:number;
+
+  getYearsWorked(): number {
+    return this.yearsWorked; //siempre existirá,asinto,pues es required<T>al crear un objeto
+  }
+
+  /* Required<T>hace requeridas todas las propiedades de T.Es sólo syntactic sugar */
+  constructor(metaData:Required<{yearsWorked:number}>){
+    this.yearsWorked = metaData.yearsWorked;
+  }
+}
+
+class Contract implements IContractor {
+  private hoursWorked:number;
+
+  getHoursWorked(): number {
+   return this.hoursWorked; 
+  }
+
+  constructor(metadata:Required<{hoursWorked:number}>) {
+   this.hoursWorked = metadata.hoursWorked; 
+  }
+
+}
+Bien,esto sería la base,tengo dos clases muy parecidas,y ahora quiero hacer esto:
+const employee1 = new Employee({ yearsWorked: 5 });
+const employee2 = new Employee({ yearsWorked: 10 });
+
+const contractor1 = new Contract({ hoursWorked: 10 });
+
+const employeeList: Employee[] = [
+  employee1,
+  employee2,
+  contractor1, <- aqui tendré un error
+];
+Obviamente,no puedo meter un contractor en una lista de Employees,pero son muy parecidas las clases,¿como puedo hacer que contractor se comporte como un Employee?.
+
+Aqui es donde empieza el patrón,habrá que crear una clase adaptadora para Constructor,que es el que se quiere comportar como un Employee,y esta clase heredará de Employee:
+
+class ContractorAdapter extends Employee{
+  constructor(contractor:Contractor){
+    super({yearsWorked: contractor.getHoursWorked()/2080});
+  }
+}
+Ahora si,una instancia de ContractorAdapter podrá pasar por un Employee:
+
+const contractor1 = new Contractor({ hoursWorked: 10 });
+const employee3 = new ContractorAdapter(contractor1);
+
+Fijate que la clase adaptadora recibe una instancia de la clase a adaptar.Esto prueba que puedo masajear una clase para que se comporte como otra muy parecida a ella.Todo claro
+
+					PATRÓN ADAPTER POR KODOTI
+
+Source: https://www.youtube.com/watch?v=P5Ig9vtRy-w&ab_channel=KODOTI
+
+El patrón adapter permite solucionar problemas de incompatibilidad entre clases.Veamos un caso para aclarar esto:
+Tenemos un código legacy que permite publicar en nuestro fan page de facebook(este código está en producción).Bien,¿pero que pasa si ahora el cliente o nosotros queremos que también se pueda publicar en slack?.
+Nuestra clase Facebook implementa una interfaz y ya está en producción.Obviamente la clase Slack no será compatible con la clase Facebook y no podemos refactorizar ese código que ya sabemos que funciona.
+También debemos imaginar que Slack es un paquete de terceros que me entregan,por lo tanto no tengo acceso a esa clase y no puedo modificarla,pues es código de terceros.
+¿Como solucionarlo?Con el patrón adapter,que busca solucionar incompatibilidad entre dos clases.Veamos como podría lucir este código:
+
+1- Tenemos la interface que expone el método post para que lo desarrollen las clases que implementen la Interfaz.
+
+export default interface INotification {
+  post(title:string,message:string)
+}
+
+2- La Clase Facebook lo implementa y desarrolla a su conveniencia:
+class FacebookNotification implements INotification {
+  public post(title:string,message:string){
+   console.log(`Sending ${title} - ${message}` to Facebook);
+  }
+}
+
+3- Bien,ya hemos mencionado,la clase Slack tiene otro método que se llama send y recibe un parámetro extra para el canal:
+
+class SlackNotification {
+  public send(channelId: string,title:string, message:string):void {
+    console.log(`Sending #${channelId} - ${title} - ${message} to Slack`);
+  }
+}  
+
+Esta clase no es compatible para trabajarla de manera polimorfica,ya que la interface obliga a usar un método post y tengo un metodo que se llama send.Además tiene más argumentos.De nuevo,la solución es muy simple,voy a crear una clase adicional que va a ser un adaptador para corregir este problema.
+La voy a llamar SlackAdapter,ya que adaptará la clase Slack
+
+PASO UNO:recuerda que esta clase adaptadora recibirá una instancia de la clase que no se puede adaptar:
+
+export class SlackAdapterNotification implements INotification {
+  constructor(private slackNotification: SlackNotification){}
+}
+
+PASO DOS:ya puede desarrollar la lógica del método post,pero esta clase adapter realmente no tiene la lógica,la tiene la clase Slack,siempre la ha tenido ella:
+
+ public post(title: string, message: string) {
+    this.slackNotification.send("#general", title, message);
+  }
+
+PASO TRES: recuerda que Slack recibe el argumento channelId,y hemos hardcodeado en el paso dos que el canal sea "general".El siguiente paso es crear un servicio que realmente tenga la lógica:
+
+import { INotification } from "../providers/notification.interface";
+
+export class NotificationService {
+  constructor( private providers:INotification[]){
+
+  }
+
+  public post(title:string, message:string):void {
+    this.providers.forEach(provider => {
+      provider.post(title,message);
+    })
+  }
+}
+
+IMPORTANTE: este Service no espera una clase concreta,trabaja con la interface(de esta manera se resuelve polimorficamente).Como recibe un arreglo creo un método post que iterará por los providers llamando al post.Falta ver el servicio en uso:
+
+En Client.ts:
+const providers: INotification[] = [
+  new FacebookNotification(),
+  new SlackAdapterNotification(new SlackNotification())
+];
+
+const notificationService = new NotificationService(providers);
+notificationService.post("Nuevo curso", "25% de descuento en el nuevo curso durante una semana");
+
+Puedo observar que la clase adaptadora recibe la instancia de Slack,que creo dos providers y el Service se encarga de mandar a los dos lo mismo.
