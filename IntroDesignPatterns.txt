@@ -1,0 +1,32 @@
+				CURSOS PATRONES DE DISEÑO
+
+Fuente: https://www.youtube.com/watch?v=Yk5TXytE-gs&list=PL9prAn3zOWZ4slyDs5y7VOxhb_Sc04ShD
+
+En este curso veré que son los patrones de diseño y casos prácticos donde aplicarlos.Usaremos Typescript.
+
+En el desarrollo de software es muy normal que en función de la complejidad del modelo de negocio se presenten problemas técnicos.
+Para muchos de estos problemas ya existen soluciones planteadas,corroboradas y testeadas.Estas soluciones son los famosos patrones de diseño.
+
+Los patrones de diseño son:
+1- Una mejor forma de solucionar las cosas
+2- Gran solución a N problemas
+3- Estandarizan el trabajo(no soluciono las cosas a mi criterio único)
+4- Los proyectos son más escalables al hacer uso de patrones de diseño
+5- Ahorramos tiempo(el patrón ya está hecho,no tengo que inventar mi solución)
+6- Evitamos reiventar la rueda
+
+NOTA: hay un libro muy bueno de O'reilly (head first design patterns).Es actual e interesante.
+
+En este curso vamos a clasificar los patrones en tipos:
+A- Patrones creacionales:buscan solucionar problemas de instanciar/creación de objetos.Dentro de estos patrones creacionales encontramos:singleton, abstract factory y factory method(hay muchos más).
+
+B- Patrones estructurales: resuelven problemas de estructura, es decir como se relaciona una clase con otra clase.Como estructurales tenemos el adapter,el decorator y el proxy
+
+C- Patrones de comportamiento: estos patrones me van a permitir una mejor propuesta a la forma en que se maneja la interacción y responsabilidades entre clases asi como los algoritmos implementados.
+Dentro de los patrones de comportamiento tengo el command(muy común en estructuras de microservicios),el observer,strategy.
+
+					VIDEO 02 PATRON SINGLETON
+
+
+
+
