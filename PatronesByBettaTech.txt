@@ -1,0 +1,206 @@
+
+Source: https://www.youtube.com/watch?v=lLvYAzXO7Ek&list=PLJkcleqxxobUJlz1Cm8WYd-F_kckkDvc8&index=3&ab_channel=BettaTech
+
+				VIDEO 02 PATRON CREACIONAL FACTORY
+
+Imagina un videojuego con varias clases de enemigos.O cualquier cosa con varias versiones diferentes.Todas ellas implementaran una interfaz(Entity en este caso):
+
+export interface Entity {
+  updateLogic():void;
+}
+
+Cada implementación de la abtración luce asi:
+
+export default class Boo implements Entity {
+  updateLogic(): void {
+      console.log('Boo is attacking');
+  }
+}
+Y otra más luce asi:
+
+export default class Goomba implements Entity {
+  updateLogic(): void {
+      console.log('Goomba is attacking');
+  }
+}
+Realmente sencillo y claro.Ahora viene la clave de todo,ya que este patrón está basado en el polimorfismo,aparte de crear las instancias en tiempo de ejecución:
+
+export default class EnemyFactory{
+rt default class EnemyFactory{
+  
+  public static createEnemy(){
+    let randomNumber = Math.random();
+    let enemy;
+    /* fijate que estoy creando un algoritmo para instanciar enemigos */
+    if(randomNumber > 0.66){
+      enemy = new Koopa();
+    }else if(randomNumber > 0.33){
+      enemy = new Goomba();
+    }else {
+      enemy = new Boo();
+    }
+    return enemy.updateLogic();
+  }
+}
+
+Puedo observar que tras llamar al método estático de esta clase,que es la Factory:
+for(const x of Array(5)) {
+  EnemyFactory.createEnemy();
+}
+Se crearán 5 instancias determinadas en tiempo de ejecución.La clave está en el polimorfismo,lya que el método updateLogic mutará según sea una instancia u otra.
+Obviamente es un ejemplo muy sencillo.
+
+						VIDEO 10 PATRÓN BRIDGE O ADAPTER
+
+La definición formal es: el patrón bridge desacopla una abstración de su implementación, para que las dos puedan cambiar de forma independiente.
+
+Si bien esto puede parecer un tanto abstracto con un ejemplo quedará más claro:
+Imaginemos que queremos renderizar listas,pero pueden ser diferentes tipos de listas(unas tendrán imágenes,otras no,..etc,unas tendrán comentarios,etc).
+
+Si bien iriamos correctamente con una única abstración o superclase que implementarían las clases originales VideoSinMiniaturaListItem, VideoConMiniaturaListItem, StreamSinMiniaturaListItem y StreamConMiniaturaListItem, en cuanto quisieramos añadir más funcionalidad tendríamos un problema.
+En esta aproximación hay un alto acople,ya que tengo que crear tantas clases como (numero de tipos de vista por numero de items).<- En este caso solo estan dos tipos de vista(con y sin miniatura) pero una tercer tipo de vista haria tener que crear otra clase más por cada tipo de item(de 9x2 a 9x3)
+
+Recordemos que este patrón intenta que ambas,clase y superclase, puedan cambiar por separado,lo cual no sucede aqui por el acoplamiento.La mantenibilidad también está comprometida,ya que escalar se volverá complicado.
+
+La clave está en utilizar la composición,para que la abstración tenga una implementación, haciendo un puente entre clase y superclase(ver imagen).Este puente entre clases parece que es una interfaz
+
+NOTA: fijate que este patrón enlaza una clase abstracta con otra jerarquica tipo interface u otra abstracta mediante el bridge(inyectando en el constructor de la abstracta.
+
+Veamoslo en código:
+
+/* fichero de abstracciones.Esta clase abstracta sería la columna izquierda del puente */
+
+export abstract class ListItemView {
+  viewModel: IViewModel; // <- esta propiedad es el puente,la que lleve el puente debe ser sí o sí una clase abstracta/abstracción ya que necesitará un constructor para el puente
+
+  constructor(viewModel: IViewModel){ <- en el constructor se inicializa la propiedad
+    this.viewModel = viewModel;
+  }
+
+  render(): void { <- método a sobreescribir por polimorfismo(diría que incluso puede ser abstracto
+    console.log('default abstract rendering');
+  }
+}
+
+/* esto sería el pilar de la derecha, el implementator ,es decir ,la columna izquierda.Puede ser una interface pero también otra clase abstracta.Llevará lógica para las distintas views o layouts,en este caso para renderizar una imagen y el texto/
+
+export interface IViewModel {
+  title(): String; 
+  image(): String;
+}
+
+Ahora cada clase tiene acceso mediante esa propiedad puente a la interfaz heredando de la abstracción:
+
+export class WithThumbnailListItemView extends ListItemView {
+
+  render() {
+   console.log('-----------------------');
+   console.log(`Here rendering amazing thumbnail: ${this.viewModel.image()}`)
+   console.log(`${this.viewModel.title()}`);
+  }
+}
+
+Y otra con sólo texto podría lucir asi:
+
+export class JustTextListItemView extends ListItemView {
+  render(): void {
+    console.log('-----------------');
+    console.log(`Just rendering text this one: ${this.viewModel.title()}`);
+    console.log('-----------------');
+  }
+}
+
+¿Y como són las clases que hereden de la interfaz ViewModel?:
+Una podría ser para videos:
+export class VideoViewModel implements IViewModel {
+  video: any;
+
+  constructor(video: any) {
+    this.video = video;
+  }
+
+  title(): string {
+    return `${this.video.title}`
+  }
+  
+  image(): string {
+    return `${this.video.image}`
+  }
+
+}
+Y otra para Streams en directo:
+export class StreamViewModel implements IViewModel {
+stream: any; //<- stream deberia tener las propiedades necesarias
+
+  constructor(stream: any) {
+    this.stream = stream;
+  }
+
+  title(): string {
+    return `(STREAM) ${this.stream.title} Currently Viewing ${this.stream.viewers}`
+  }
+
+  image(): string {
+    return `(STREAM) ${this.stream.image}`;
+  }
+}
+
+Bien,y como funciona todo esto?Imaginemos una base de datos que devuelve todo esto:
+import { ListItemView } from "../abstracciones/ListItemView";
+import { WithThumbnailListItemView } from "../concrecciones/WithThumbNailListItemView";
+import { VideoViewModel } from '../concrecciones/VideoViewModel';
+import { JustTextListItemView } from "../concrecciones/JustTextListItemView";
+import { StreamViewModel } from '../concrecciones/StreamVideoViewModel';
+
+export const content = [
+  {
+    type: "video",
+    title: "Egoland 2: Tirando misiles",
+    image: "Amazing image",
+  },
+  {
+    type: "stream",
+    title: "JUGANDO A POKEMON!, UNANSE!",
+    image: "Amazing image",
+    viewers: 10
+  },
+  {
+    type: "stream",
+    title: "SKYRIM LIVES OR NOT!",
+    image: "Amazing image",
+    viewers: 1
+  },
+  {
+    type: "video",
+    title: "Campanadas Ibai 2034",
+    image: "Amazing image",
+  },
+  {
+    type: "video",
+    title: "Vegeta7777 muere",
+    image: "Amazing image",
+  },
+];
+
+const listViews: ListItemView[] = [];
+
+for(let item of content){
+  if(item.type==="video"){
+    listViews.push( 
+      Math.random() > 0.5 
+      ? new WithThumbnailListItemView(new VideoViewModel(item))
+      : new JustTextListItemView(new VideoViewModel(item))
+    )
+  }else if(item.type==="stream"){
+    listViews.push(
+      Math.random() > 0.5
+      ? new WithThumbnailListItemView(new StreamViewModel(item))
+      : new JustTextListItemView(new StreamViewModel(item))
+    )
+  }
+}
+/* fijate como todo dios es una instancia de ListItemView  y puede renderizar */
+for(let view of listViews) {
+  view.render()
+}
+

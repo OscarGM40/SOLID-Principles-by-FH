@@ -1,0 +1,86 @@
+
+
+						VIDEO 04 FACTORY METHOD PATTERN
+
+Source: https://www.youtube.com/watch?v=EcFVTgRHJLM&list=PLrhzvIcii6GNjpARdnO4ueTUAVR9eMBpc&index=5
+
+Este patrón abstrae la lógica de instanciar objetos a un método factory,a un método que es una fábrica de objetos.¿Porque hacer esto?
+A- Puede que la instanciación sea complicada,que requiera de más logica de negocio que un simple new.Esto además suele ir acompañado de que realmente no se sabrá el tipo de instancia que se quiere hasta el runtime(ejemplo de los enemigos en un game)
+
+B- Por polimorfismo,si tengo que instaciar esta factory,podría cambiarla en runtime por otra factory también(ejemplo ya visto)
+
+NOTA: fijate que tengo los beneficios de reusabilidad,ya que puedo llamar a esta clase/método factory en otros puntos de la aplicación e incluso puedo cambiar la lógica del punto A entre factories.Recuerda que la factory es responsable de albergar la lógica.
+
+Fijate que este patrón permite tanto cambiar las fábricas programáticamente como cambiar los objetos que instancia cada fábrica
+
+Ejemplo sencillo: tres clases, Dog,Cat y Duck que implementarán la interfaz Animal,para que puedan ser cambiadas en runtime por polimorfismo.Una clase/método RandomFactory que tenga un método createAnimal y cree un Animal en base a cierta lógica random.Puedo tener otra Factory llamada BalancedFactory que siempre cree equitativamente un Animal de cada clase
+
+Fijate que en el UML se puede apreciar perfectamente que las xxxFactory tendrán también su propia implementación de interface/contrato.De esta forma también puedo aplicar polimorfismo entre las Factories,no solo entre las subclases a instanciar.Perfecto,asinto.
+
+IMPORTANTE: el patrón Simple Factory sería el primer ejercicio que hice,es decir,quitando la parte donde puedo cambiar de Factories creando una interface también.
+(Básicamente iria al punto donde creo la clase Factory en vez de una subclase,ya que sólo quiero una factory).Concepto de SingleConcreteFactory
+
+NOTA: fijate que este patrón incluso podría crear un solo tipo de ConcreteItems(por ejemplo un juego de naves que llame al Factory Method createAsteroid y cree siempre objetos Asteroid,pero con diferente tamaño y posición.NO tiene porque haber más de una subclase a instanciar.
+
+IMPORTANTE: y lo mismo para la Factory,podría tener una sóla,que instancie esos Asteroid,pero por ejemplo que reciba el argumento level y según en nivel que cambie el tiempo de spawneo del Asteroid,reduciendolo.Es decir que las Factory y las Classes a instanciar pueden recibir parámetros
+A medida que sepa más sobre este patrón usaré más los argumentos en vez de crear diferentes subclases o subfactories(concepto de Composition over Inheritance)
+
+					VIDEO 08 ADAPTER PATTERN
+
+Hay un grupo de patrones, Adapter, Facade, Proxy y Decorator que son un tanto similares.Iremos desgranando todo esto poco a poco.
+
+1- EL patrón adapter trata de hacer compatible dos interfaces que no son compatibles
+
+2- Facade(fachada) coge un grupo de interacciones complejas y crea una fachada(oculta esa lógica compleja) que puedo usar en vez de tratar con todos esos objetos complejos e interacciones complejas
+
+3- Proxy es una manera de ubicar un proxy entre algo que quiero llamar(intercepta un objeto y me da control sobre él).En vez de llamar a eso llamaré al proxy,que llamará despues a esa primera cosa que queria llamar.Se usa normalmente por razones de seguridad,dar feedback mayor o comprobaciones,etc... Es como un middleware.
+
+4- Decorator es una manera de añadir comportamiento a un objeto en particular(añade comportamiento a un objeto,al cual decora con ese comportamiento,de ahi su nombre). 
+
+Volviendo al patrón de este video,al patrón adapter también se le conoce como wrapper,ya que envuelve la interfaz no compatible
+
+IMPORTANTE: fijate que en este patrón tengo un tipo de entrada de datos y un tipo diferente de salida(imagina un conversor de corriente de dos orificios para Europa,donde la entrada es un enchufe de dos patas, y ese conversor termina teniendo tres patas,para que entre en un enchufe americano).Es decir que la entrada y la salida son diferentes.
+NOTA:fijate que comenta que un adapter podriá tomar varias formas para la entrada de datos(interfaz A) y tener un único output de tres patas.Es decir que hay adaptadores más complejos en el mundo,pero en código vamos a hablar sólo de un adapter de una entrada A a una salida B(una entrada y una salida,diferentes,y por ello necesitan un adaptador)
+
+Según el libro: el patrón adapter convierte la interfaz de una clase(su contrato) en otra interfaz que el cliente(usuario) espera.Adapter permite que dos clases trabajen juntas,que de otro modo no podrían.Desde luego lo que hace es muy simple de entender
+UML
+
+Client  -> ITarget    <- el cliente espera la interfaz ITarget
+           request()  <- esa interfaz esperada tiene el método request,ie 
+             ↓
+           Adapter <- el adapter debe implementar la interfaz esperada
+           request() <- dado que la implementa puede desarrollar request()
+
+* Es trabajo del adapter que ese método request trabaje correctamente.Este trabajo no lo hace ella,sino que lo delega en otra interfaz,la llamaremos Adaptee(adaptada):
+
+Adapter   -> Adaptee 
+request()    specificRequest()
+
+Normalmente este adaptee es una libreria externa(se comunica con ella) de la que no tenemos control,y que puede cambiar.Recuerda que realizar esto desacopla la lógica.
+IMPORTANTE: es muy importante entender que la intención aquí es no añadir lógica.El contrato con el cliente no cambia ni un ápice(el enchufe o input sigue siendo de dos patas) y la output sigue siendo de tres patas.Es el adapter el que tiene toda la lógica para pasar de dos a tres orificios en la toma.
+Ninguna de las dos interfaces cambia,lo hace todo el adaptador
+
+CLIENT: el cliente sólo quiere hacer esto:
+ITarget target = new Adapter( new Adaptee() );
+target.request() <- esto es nuestro objetivo final
+
+La interfaz con el cliente es un simple contrato 
+interface ITarget {
+  request():void;
+}
+
+Adapter era una clase que implementa el contrato
+class Adapter implements ITarget {
+  private _adaptee Adaptee;
+
+  constructor(Adaptee a){
+   this._adaptee = a;
+
+  public void request(){
+    this._adaptee.specificRequest()
+  }
+
+* Fijate que esta clase tiene una instancia privada del tipo Adaptee,la cual inicializa en el construcor,dandome acceso a ella en cuanto instancie Adapter tengo la instancia de Adaptee
+Notesé también que Adapter llama al método request,el cual debe llamarse como el del contrato final y que éste,simplemente llama a otro método(es aqui donde ocurre toda la magia).Al final llamar a request() simplemente llamará a specificRequest()
+
+Por último,fijate que estamos asumiendo que podemos instanciar Adaptee,pero podriamos ir con métodos estáticos.
