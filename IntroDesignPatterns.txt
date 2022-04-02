@@ -27,6 +27,308 @@ Dentro de los patrones de comportamiento tengo el command(muy común en estructu
 
 					VIDEO 02 PATRON SINGLETON
 
+El patrón Singleton pertenece a los patrones creacionales.Este patrón básicamente lo que hace es crear una sola instancia de una clase.
+Muchas veces en nuestro aplicativo tendré lógica que se repite y no es necesario reinstanciar la clase
+Siempre que llamemos a la clase no va a retornar una instancia nueva,sino que retornará esa instancia ya definida.
+
+Veamos un ejemplo práctico.En todos los proyectos siempre hay parámetros de configuración,lo que puedo hacer es crear una clase singleton que la primera vez que se llame iniciará todos los parametros(configura la aplicación).
+Sucesivas llamadas no realizará nada.
+
+NOTA:fijate que usar Singleton tiene mejor performance ya que sólo reservaré un lugar en memoria máximo para una instancia.
+
+Empezamos creando un config.json con esos datos de configuración:
+{
+  "environment": "development",
+  "connectionString":"Server=myServerAddress;Database=myDataBase;UserId=myUsername;Password=myPassword;",
+  "apiUrl":"https://api.kodoti.com"
+}	
+
+NOTA:la base de este patrón está en hacer referencia a si mismo.A su vez,creamos un constructor privado para que nunca sea accesible desde fuera de la clase.
+Somos nosotros los que crearemos la instancia.Una vez se haya creado se devuelve siempre esa misma instancia.Veamoslo en código mejor:
+
+PASO UNO: crear una propiedad del mismo tipo que la clase y un constructor privado vacío.
+
+export default class MyConfiguration {
+  private static instance: MyConfiguration; <- regla 1,crear propiedad del mismo tipo que la clase  
+  private constructor(){} <- regla 2,constructor privado,solo accesible dentro de la clase,nunca podré crear una instancia desde fuera 
+
+PASO DOS: creo las propiedades/métodos que necesite la clase,privadas,en este caso son estas:
+  private static _connectionString:string;
+  private static _environment:string;
+  private static _apiUrl:string;
+
+PASO TRES: dado que el constructor es "paja",no puedo usarlo,necesito un método que inicialize la instancia según exista previamente o no(devolviendola en este caso).Este método es muy conocido y se le llama getInstance por convención:
+
+public static getInstance():MyConfiguration {
+  if(!this.instance){
+  this.instance= new MyConfiguration();
+  this.initialize();
+}
+return this.instance; <- CLAVE!! fijate que getInstance siempre devuelve la misma instancia(si ya la hay va a pasar el if y la devuelve).
+
+* El initialize luce asi(simplemente inicializa los valores):
+
+private static initialize():void{
+    this._connectionString = config.connectionString;
+    this._environment = config.environment;
+    this._apiUrl = config.apiUrl;
+  }
+
+PASO CUATRO: Por último falta crear los getters para que se pueda acceder en el initialize a los valores de las propiedades:
+
+ get connectionString(): string {
+    return MyConfiguration._connectionString;
+  }
+  get environment(): string {
+    return MyConfiguration._environment;
+  }
+  get apiUrl(): string {
+    return MyConfiguration._apiUrl;
+  }
+IMPORTANTE: recuerda que los patrones de diseño incrementan la calidad de mi código,me permiten acceder a la solución a un problema fácilmente y fueron diseñados pensando en la escalabilidad y flexibilidad.En grupos de trabajo ayuda a los otros dev a entender el código.
+
+IMPORTANTE: fijate que el único método que deja público este patrón es el getInstance,que además debe ser static también.De esta forma esta clase sólo dejó acceso a getInstance que devolverá una y otra vez la misma instancia:
+
+let config = MyConfiguration.getInstance() <- en cuanto quiera crear el singleton llamo al método.Lo puedo llamar cuantas veces quiera,que no va a crear otra instancia
+
+Para llamar a las pruebas:
+"test-singleton": "mocha -r ts-node/register creational/singleton/*.spec.ts", <- cambiar creational/singleton,ya que no tengo esa estructura de files.
+!! <- last command entirely
+!* <- all arguments from previous command
+!$ <- lastargument from previous command
+!^first argument <- fijate que coincide con las regexp
+
+import { expect } from "chai";
+import "mocha";
+
+let config = MyConfiguration.getInstance();
+
+describe('Pruebas en patrón creacional Singleton', () => { 
+
+  it("object should be not null", () => {
+    expect(MyConfiguration.getInstance()).to.not.be.null;
+  })
+  
+  it('objects should share same memory address', () => {
+    let config2 = MyConfiguration.getInstance();
+    expect(config2).to.equal(config);
+  })
+  
+  it('environment property should have value of development', () => {
+    expect(config.environment).to.equal('development');
+  })
+  
+ })
+Puedo tratar de recordar que siempre voy a usar ! + otro simbolo(! o * o $ o ^).Genial.
+Por último,lo importante es el concepto.Esta lógica es la misma en Java,Python,C#,etc...
+
+			VIDEO 03 PATRON CREACIONAL FACTORY
+
+Este patrón permite instanciar objetos en tiempo de ejecución(runtime).Esto se traduce en que puedo crear instancias de objetos a demanda.Estos objetos tendrán en común la misma interfaz
+El autor recuerda que se dejó este patrón cuando presentó los creacionales.Este patrón es muy fácil de implementar
+
+Caso práctico: necesito procesar las órdenes de compra y calcular el costo que asumimos según el método de pago
+PayPal - 6%
+Visa - 5%
+MasterCard - 4%
+
+Esto serán tres clases,de las cuales lo único que me interesa es la implementación(la interface que implementan):
+
+import IPaymentMethod from "../../src/payment-method.interface";
+
+export default class PayPal implements IPaymentMethod {
+  get comission(): number {
+    return 0.05;
+  }
+
+import IPaymentMethod from "../../src/payment-method.interface";
+
+export default class Visa implements IPaymentMethod {
+  get comission(): number {
+    return 0.06;
+  }
+}
+
+y la tercera:
+import IPaymentMethod from "../../src/payment-method.interface";
+
+export default class MasterCard implements IPaymentMethod {
+  get comission(): number {
+    return 0.04;
+  }
+}
+La interface luce asi:
+export default interface IPaymentMethod {
+  comission: number;
+}
+Fijate como el get comission ha hecho cumplir la interfaz(pero si es un método?).
+Bien,creamos una clase order para que procese las Ordenes:
+
+export default class Order {
+  public paymentType?: IPaymentMethod;
+  public comission: number = 0;
+
+  constructor(
+    private type: PaymentType,
+    public amount: number) { }
+ 
+  public create(): void {
+    if(this.type === PaymentType.Visa) { 
+      this.paymentType = new Visa();
+    }
+    if(this.type === PaymentType.MasterCard) { 
+      this.paymentType = new MasterCard();
+    }
+  }
+}
+Fijate en el método create.Esta aproximación funcionaría,pero no es una solución práctica.El patrón factory encapsulará esta lógica dejandola reutilizable.
+	
+Lo que voy a hacer es crear esta clase(que fijate que es lo que iba a tener el método).De esta manera este código es reutilizable y escalable.
+
+export default class PaymentMethodFactory {
+  public static createPaymentType(type: PaymentType): IPaymentMethod {
+    if (type === PaymentType.MasterCard) {
+      return new MasterCard();
+    }
+    if (type === PaymentType.Visa) {
+      return new Visa();
+    }
+    if (type === PaymentType.PayPal) {
+      return new PayPal();
+    }
+    throw new Error("Payment type not found");
+  }
+}
+Esta clase PaymentMethodFactory se va a volver una fábrica de tipos de métodos de pago(fijate que hicimos el método estático)
+
+Ahora el método create sólo necesita una linea de código:
+
+  public create(): void {
+    this.paymentType = PaymentMethodFactory.createPaymentType(this.type);
+    this.comission = this.paymentType.comission * this.amount;  }
+}
+Obviamente habría más lógica en un proyecto real.Hagamos un par de tests:
+
+describe('Order - MasterCard', () => {
+  it('Order must be paid by mastercard', () => {
+    expect(true).to.equal(order2.paymentType instanceof MasterCard);
+  })
+
+  it('Order comission must be 4', () => {
+    expect(4).to.equal(order2.comission);
+  })
+})
 
 
+describe('Order - PayPal', () => {
+  it('Order must be paid by paypal', () => {
+    expect(true).to.equal(order3.paymentType instanceof PayPal);
+  })
 
+  it('Order comission must be 5', () => {
+    expect(5).to.equal(order3.comission);
+  })
+})
+
+Resumen patrón adapter: permite que una clase B se comporte como una clase A,siendo incompatibles.Se consigue mediante una tercera clase AdapterBtoA que recibirá por constructor una instancia de B y desarrollará el método que implementa la clase A desde su interfaz.
+Entonces necesito dos clases y una interfaz desde un principio?
+
+		VIDEO 04 PATRON CREACIONAL ABSTRACT FACTORY
+
+Es un patrón que resuelve problemas de creación o de instanciación de objetos.
+Permite agrupar familias de objetos para su creación.
+En pocas palabras es una fábrica de fábricas de objetos(fijate que es como el padre de el anterior,que era una única fábrica de objetos).
+
+El caso práctico es el siguiente:
+Necesitamos publicar un mensaje en las distintas redes sociales y canales de chat:
+Facebook
+LinkedIn
+Slack
+Pero se nos presenta un reto o problema:para conectarnos a cada canal necesitamos (o simplemente tenemos) más de una clase.Es decir,tenemos una clase de conexión y otra clase de publicación del mensaje
+
+Imaginemos este punto de partida:
+class PublisherFactory {
+  getConnector(type:string): IConnector {
+   if(type==="FacebookConnector){
+      return new FacebookConnector();
+   }
+   if(type==="LInkedInConnector){
+      return new LinkedInConnector();
+   }
+   if(type==="SlackConnector){
+      return new SlackConnector();
+   }
+  throw new Error("Invalid type");
+  }
+}
+
+  getPublisher(type:string,connector:IConnector):IPublisher {
+    if(type==="FacebookPublisher"){
+      return new FacebookPublisher(connector);
+    }
+    if(type==="LinkedInPublisher"){
+      return new LinkedInPublisher(connector);
+    }
+    if(type==="SlackPublisher"){
+      return new SlackPublisher(connector);
+    }
+    throw new Error("Invalid type");
+  }
+}
+Si ahora quisiera agregar un nuevo canal de publicación tendría que añadir otras dos condiciones.
+Este código también lleva a errores,si llamo al getPublisher con un connector incorrecto dará un error.
+Es decir,el desarrollador debe saber exactamente con que clase debe trabajar.A través de abstract factory vamos a evitar esto,ya que sólo me interesará la implementación(es decir,su uso)
+
+La fábrica lucirá asi(fijate que se trabaja todo con interfaces,no queremos saber nada de la clase):
+
+export default interface IAbstractFactory {
+  getConnector():IConnector;
+  getPublisher(connector: IConnector):IPublisher;
+}
+
+Fijate como cada clase deberia recibir en el constructor el conector,para poder publicar:
+export default class LinkedinPublisher implements IPublisher {
+  constructor(private connector: IConnector) { }
+
+  publish(content: string): void {
+    // Your logic to publish on Linkedin
+    console.log("Linkedin");
+    console.log(content);
+  }
+}
+
+Fijate como el conector también es otra clase que implementa otra interfaz:
+export default class SlackConnector implements IConnector {
+  open(): void {
+    // Logic to make a valid connection
+  }
+
+  close(): void {
+    // Logic to close the current connection
+  }
+}
+Y la fábrica de Slack luce asi:
+export default class SlackFactory implements IAbstractFactory {
+  getConnector(): IConnector {
+    return new SlackConnector();
+  }
+
+  getPublisher(connector: IConnector): IPublisher {
+    return new SlackPublisher(connector);
+  }
+}
+Fijate ahora en lo que creamos:
+export default class Publisher {
+  constructor(private content: string){ }
+
+  public send(factory: IAbstractFactory){
+    const connector = factory.getConnector();
+    const publisher = factory.getPublisher(connector);
+
+    connector.open();
+    publisher.publish(this.content);
+    connector.close();
+  }
+
+}
+Esta clase recibe el contenido a mandar en el constructor,y en el método send recibe una instancia de IAbstractFactory,da igual cual.Según cual sea llamará a su getConnector y getPublisher(connector).Increible.
