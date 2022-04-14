@@ -1,0 +1,135 @@
+				DESIGN PATTERNS IN TYPESCRIPT BY SIMPLY EXPLAINED
+
+Source: https://www.youtube.com/watch?v=WPOLDEk1LF0&list=PLzvRQMJ9HDiSk1pnrKewLklYfCdu9Qjhy&index=14&ab_channel=SimplyExplained
+
+Los decorators en Typescript son como las Annotations en Java.No tiene nada que ver con la feature.
+El patrón estructural decorator es útil para cuando quiero dar a los objetos diferentes opciones.Por ejemplo,cuando voy a comprar un coche tengo un modelo base y despues le puedo añadir opciones, "decorando" el coche a mi gusto.
+
+Lo primero sería tener acceso a esos objetos que quiero decorar,en este caso coches de Tesla:
+
+class ModelS {
+  public description = "Model S";
+
+  public cost(): number {
+    return 73000;
+  }
+}
+
+class ModelX {
+  public description = "Model S";
+
+  public cost(): number {
+    return 77000;
+  }
+}
+
+DOS - crear una clase abstracta para ellos que nunca instanciaré,no se debe trabajar con la abstracción.Ambas clases anteriores extenderán esta clase.
+
+abstract class Car {
+  public description: string;
+
+  constructor(description: string) {
+    this.description = description;
+  }
+
+  public getDescription(): string {
+    return this.description;
+  }
+
+  public abstract cost(): number;
+}
+
+TRES- crear otra clase abstracta que hara de implementación o superclase para las múltiples opciones.Debe heredar de Car también,para que pueda resolverse a TeslaS o TeslaX:
+
+abstract class CarOptions extends Car {
+  decoratedCar: Car;
+  description: string;
+  
+  constructor(car: Car,description: string) {
+    super(description);
+    this.decoratedCar = car;
+    this.description = description;
+  }
+  public abstract getDescription(): string;
+  public abstract cost(): number;
+}
+
+CUATRO - ahora,para una opción extra creo una clase que heredará de CarOptions(que ya heredaba de Car):
+
+class EnhancedAutoPilot extends CarOptions {
+  decoratedCar: Car;
+  description: string;
+  
+  constructor(car: Car,description: string){
+    super(car,description);
+    this.decoratedCar = car;
+    this.description = description;
+  }
+  
+  public getDescription(): string {
+    return this.decoratedCar.getDescription() + ", EnhancedAutoPilot";
+  }
+  public cost(): number {
+    return this.decoratedCar.cost() + 5000;
+  }
+}
+
+Creo tantas clases como opciones quiera tener:
+class RearFacingSeats extends CarOptions {
+  decoratedCar: Car;
+  description: string;
+  
+  constructor(car: Car,description: string){
+    super(car,description);
+    this.decoratedCar = car;
+    this.description = description;
+  }
+  
+  public getDescription(): string {
+    return this.decoratedCar.getDescription() + ", RearFacingSeats";
+  }
+  public cost(): number {
+    return this.decoratedCar.cost() + 4000;
+  }
+}
+
+CINCO - Ya sólo falta usarlo,fijate en la forma:
+
+let myTesla = new ModelS("Tesla S original");
+myTesla = new RearFacingSeats(myTesla,"Model S with Seats");
+
+console.log(myTesla.cost());
+console.log(myTesla.getDescription());
+
+>87000
+>Model S, RearFacingSeats
+
+IMPORTANTE: que pasa si también quiere el AutoPilot.Es tán sencillo como esto:
+let myTesla = new ModelS("Tesla S original");
+myTesla = new RearFacingSeats(myTesla,"Model S with Seats");
+myTesla = new EnhancedAutoPilot(myTesla,"");
+
+>102000
+>Model S, RearFacingSeats, EnhancedAutoPilot
+
+En cuanto al UML seria asi:
+
+ 						Component(Abstract class Car)
+                        + method() <- será el abstract cost
+
+       Clases concretas(ModelS,ModelX,...)	Decorator(otra abstracta,carOptions)
+ 		mismo method que Car				heredará de Component,o sea Car
+       + method()							+method()
+											ConcreteDecorator(hereda de Decorato
+											+ method()
+
+Puedo ver que la clave será el polimorfismo,ya que todos sobreescriben el abstract method.También será clave la acumulación scriptada al llamarse a si mismos los getters de esta forma:
+ 
+public getDescription(): string {
+    return this.decoratedCar.getDescription() + ", RearFacingSeats";
+  }
+  public cost(): number {
+    return this.decoratedCar.cost() + 14000;
+  }
+
+NOTA: para saber si se ha llamado un decorator puedo usar instanceof,asi no puedo aplicar dos veces lo mismo(habría que controlar eso).

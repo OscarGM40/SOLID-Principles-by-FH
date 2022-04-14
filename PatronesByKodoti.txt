@@ -1,4 +1,4 @@
-				CURSOS PATRONES DE DISEÑO
+				PLAYLIST PATRONES DE DISEÑO BY KODOTI
 
 Fuente: https://www.youtube.com/watch?v=Yk5TXytE-gs&list=PL9prAn3zOWZ4slyDs5y7VOxhb_Sc04ShD
 
@@ -15,9 +15,8 @@ Los patrones de diseño son:
 5- Ahorramos tiempo(el patrón ya está hecho,no tengo que inventar mi solución)
 6- Evitamos reiventar la rueda
 
-NOTA: hay un libro muy bueno de O'reilly (head first design patterns).Es actual e interesante.
-
 En este curso vamos a clasificar los patrones en tipos:
+
 A- Patrones creacionales:buscan solucionar problemas de instanciar/creación de objetos.Dentro de estos patrones creacionales encontramos:singleton, abstract factory y factory method(hay muchos más).
 
 B- Patrones estructurales: resuelven problemas de estructura, es decir como se relaciona una clase con otra clase.Como estructurales tenemos el adapter,el decorator y el proxy
@@ -25,7 +24,9 @@ B- Patrones estructurales: resuelven problemas de estructura, es decir como se r
 C- Patrones de comportamiento: estos patrones me van a permitir una mejor propuesta a la forma en que se maneja la interacción y responsabilidades entre clases asi como los algoritmos implementados.
 Dentro de los patrones de comportamiento tengo el command(muy común en estructuras de microservicios),el observer,strategy.
 
-					VIDEO 02 PATRON SINGLETON
+En la playlist el autor seguirá este orden,creacionales,estructurales y de comportamiento.
+
+					VIDEO 02 PATRON CREACIONAL SINGLETON
 
 El patrón Singleton pertenece a los patrones creacionales.Este patrón básicamente lo que hace es crear una sola instancia de una clase.
 Muchas veces en nuestro aplicativo tendré lógica que se repite y no es necesario reinstanciar la clase
@@ -122,7 +123,7 @@ describe('Pruebas en patrón creacional Singleton', () => {
 Puedo tratar de recordar que siempre voy a usar ! + otro simbolo(! o * o $ o ^).Genial.
 Por último,lo importante es el concepto.Esta lógica es la misma en Java,Python,C#,etc...
 
-			VIDEO 03 PATRON CREACIONAL FACTORY
+					VIDEO 03 PATRON CREACIONAL FACTORY
 
 Este patrón permite instanciar objetos en tiempo de ejecución(runtime).Esto se traduce en que puedo crear instancias de objetos a demanda.Estos objetos tendrán en común la misma interfaz
 El autor recuerda que se dejó este patrón cuando presentó los creacionales.Este patrón es muy fácil de implementar
@@ -233,7 +234,7 @@ describe('Order - PayPal', () => {
 Resumen patrón adapter: permite que una clase B se comporte como una clase A,siendo incompatibles.Se consigue mediante una tercera clase AdapterBtoA que recibirá por constructor una instancia de B y desarrollará el método que implementa la clase A desde su interfaz.
 Entonces necesito dos clases y una interfaz desde un principio?
 
-		VIDEO 04 PATRON CREACIONAL ABSTRACT FACTORY
+				VIDEO 04 PATRON CREACIONAL ABSTRACT FACTORY
 
 Es un patrón que resuelve problemas de creación o de instanciación de objetos.
 Permite agrupar familias de objetos para su creación.
@@ -277,7 +278,7 @@ class PublisherFactory {
 }
 Si ahora quisiera agregar un nuevo canal de publicación tendría que añadir otras dos condiciones.
 Este código también lleva a errores,si llamo al getPublisher con un connector incorrecto dará un error.
-Es decir,el desarrollador debe saber exactamente con que clase debe trabajar.A través de abstract factory vamos a evitar esto,ya que sólo me interesará la implementación(es decir,su uso)
+Es decir, el desarrollador debe saber exactamente con que clase debe trabajar.A través de abstract factory vamos a evitar esto,ya que sólo me interesará la implementación(es decir,su uso)
 
 La fábrica lucirá asi(fijate que se trabaja todo con interfaces,no queremos saber nada de la clase):
 
@@ -332,3 +333,278 @@ export default class Publisher {
 
 }
 Esta clase recibe el contenido a mandar en el constructor,y en el método send recibe una instancia de IAbstractFactory,da igual cual.Según cual sea llamará a su getConnector y getPublisher(connector).Increible.
+
+					VIDEO 05 PATRON ESTRUCTURAL ADAPTER
+
+El patrón Adapter es de tipo estructural y permite solucionar problemas de incompatibilidad entre dos clases.
+El caso propuesto es el siguiente: tenemos nuestro legacy code que ya está en producción que permite publicar en facebook.Ahora también queremos publicar en slack
+
+El problema es que Facebook implementa una interfaz o contrato,pero la clase que queremos crear(Slack),no es compatible con ese contrato y obviamente Facebook ya está en producción(puedo ver a Slack como una libreria externa que no puedo modificar)
+El patrón Adapter busca solucionar esto,la incompatibilidad entre dos clases:
+
+La interface o contrato luce asi:
+export default interface INotification {
+  post(title:string,message:string):void;
+}
+
+La clase Facebook cumple el contrato:
+class FacebookNotification implements INotification {
+  public post(title:string, message:string){
+  console.log(`Sending ${title} - ${message} to Facebook.`);
+
+Pero la clase Slack es posterior y no va a cumplirlo,incluso tiene otro nombre el método aparte de diferente nº de argumentos:
+class SlackNotification {
+  public send(channelId: string, title: string, message: string){
+    console.log(`Sending #${channelId} - ${title} - ${message} to Slack`);
+
+Recuerda que la solución es crear una clase Adapter que implemente la interfaz original y que reciba por constructor la clase a adaptar:
+
+class SlackAdapter implements INotification {
+  constructor(private slackNotification: SlackNotification){}
+
+  public post( title: string,message:string){
+    this.slackNotification.send("general",title,message)
+
+* NOTA: el servicio ya no es parte del patrón.Solo es parte la clase y contrato original y la clase posterior a adaptar que no puede cumplir el contrato y por ello hay que crear otra que lo cumpla y reciba una instancia por constructor de esta clase a adaptar 
+Fijate que ahora podria crear un service que reciba un arreglo de INotification:
+
+class NotificationService {
+  constructor( private providers: INotification[]){}
+   
+  public post(title: string, message: string) {
+  this.providers.forEach( p => p.post(title,message)); <- aqui irá el polimorfismo
+
+Fijate que ese método post del servicio se resuelve polimorficamente.Ahora ya solo habria que crear ese arreglo y llamar al servicio:
+
+const providers: INotification[] = [
+  new FacebookNotification(),
+  new SlackAdapter(SlackNotification()) <- fijate en el uso del adapter
+]
+const nS = new NotificationService(providers)
+nS.post("nuevo curso","25% de descuento") <- fijate que el servicio además mandará el post a ambas redes sociales,adaptandose según cual sea por polimorfismo.
+El servicio no es parte del patrón.
+
+				VIDEO 06 PATRÓN ESTRUCTURAL DECORATOR
+
+Este patrón permite agregar comportamiento a nuestro objeto sin alterar su estructura.Es decir,que no voy a agregar más codigo,sino que cambiaré su comportamiento en tiempo de ejecución. 
+Cada comportamiento extra se conseguirá mediante un decorador que "decora" el objeto original,pero no lo modifica.
+Caso propuesto: tenemos una tienda de música y queremos aplicar diferentes descuento tanto en base al cliente como en base a la campaña actual.
+
+IMPORTANTE: este problema podría solucionarse con ifs:
+const product = new Product("Guitarra Suhr Classic",2500);
+
+if(customer.isFirstBuy){
+  const discount = campaignService.getByCode('FIRST-BUY');
+  product.price = product.price - discount;
+}
+if(customer.type === 'VIP'){
+  const discount = customerService.getVipDiscount();
+  product.price = product.price - discount;
+ }
+
+Este codigo es perfectamente válido,pero no es escalable ni mantenible.
+
+Si aplicamos el patrón decorador la solucion sería la siguiente:
+let discount = new BasePrice();
+
+if(customer.isFirstBuy){
+  discount = new SpecialPriceDecorator(discount);
+}
+if(customer.type === 'VIP'){
+ discount = new VipCustomerDecorator(discount);
+
+product.setSpecialPrice(
+ discount.calculate(product.price))
+
+Igual se podia mejorar un poco.Sea como sea fijate que la clave está en que en el constructor de las subclases que implementan la abstracción se recibe una instancia de la misma:
+
+export class VipCustomerDecorator implements IDiscount {
+  constructor(private readonly decorator: IDiscount) { }
+
+De esta forma se podrá llamar a otra clase decoradora con la anterior.
+
+				VIDEO 07 PATRON ESTRUCTURAL PROXY PATTERN
+
+Este patrón trabaja como un intermediario para cambiar el comportamiento de una clase sin cambiar su estructura.
+Esto quiere decir que funciona como una capa intermedia,que básicamente va a hacer lo mismo que el objeto que está encapsulando pero puede anidar comportamiento adicional
+
+Veamos el siguiente caso propuesto:
+Estamos trabajando en una empresa y queremos traer/mostrar  una playlist de Kodoti de Youtube.
+Retos:
+1- los videos deber ser mostrados en nuestra página principal
+2- Se estima que se recibirán 1500 visitas al día,con lo que podria haber delay y una mala experiencia de usuario 
+
+La solución va a ser crear un proxy que se conecte al API de Youtube.Asi mismo,el proxy implementará un sistema de caché local para que solucione los posibles problemas de  concurrencia.Es decir,el primer usuario que se conecte a la API de Youtube cada día creará esa cache para el resto de usuarios,y será el único que se conecte a Youtube,los demás al proxy cacheado
+
+Crearé dos clases, youtube.api.ts y youtube.proxy.ts.La primera se conectará a la API de Youtube,la segunda es la clase intermediaria,la que hará de caché.
+
+Incluso crearemos una interface por si queremos cambiar el Provider.Luce asi:
+
+interface IVideoProvider {
+  getPlayList(code: string): Promise<String[]>
+}
+export { IVideoProvider }
+
+En cuanto a la clase que hace la petición directamente vamos a simular que la consulta es muy lenta(3000ms):
+
+class YoutubeAPI implements IVideoProvider {
+ private _playlist: any = {
+   courses: [
+     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+     'https://www.youtube.com/watch?v=Ph4SLROqSEQ',
+     'https://www.youtube.com/watch?v=Tvs3r0TVc$I',
+    ]
+ }
+ /* el code solo podrá ser courses y devolverá el arreglo de URLS */
+  async getPlayList(code: string): Promise<String[]> {
+    return new Promise( (resolve, reject) => {
+      setTimeout(() => {
+        const result = this._playlist[code] || null;
+        resolve(result);
+      }, 3000)
+    })
+  }
+}
+
+export { YoutubeAPI }
+
+Asi pues,estoy obligado a crear la clase Proxy(también puedo suponer que esta API es inaccesible,o es un paquete externo).Veamos esa clase proxy:
+class VideoProxy implements IVideoProvider {
+  private _cache: any = {};
+
+  constructor(private readonly provider: IVideoProvider) {
+
+  }
+
+  async getPlayList(code: string): Promise<String[]> {
+    let result = this._cache[code];
+    if(!result) {
+      result = await this.provider.getPlayList(code);
+      this._cache[code] = result;
+    }
+    return result;
+  }
+}
+
+export { VideoProxy }
+Fijate que este proxy recibirá un Provider y hace la petición una vez(aqui hay mucho del patrón Singleton,ya que hay recursividad en la función al llamarse la propiedad a si misma en el retorno de la función)
+
+Ahora ya solo faltaría simular 4 o 5 peticiones y veré como sólo la primera pasa por la clase YoutubeAPI y las demás pasan por VideoProxy por polimorfismo y recursividad de la propiedad.
+
+
+/* instancio la clase Proxy ojo,no la otra,mediante downcasting y polimorfismo podré usar ambas.Fijate en la composición sobre herencia tmb */
+const proxy = new VideoProxy(new YoutubeAPI());
+
+(async () => {
+  /* la primera vez debería tardar unos 3 segundos */
+  await getPlayList();
+  /* sucesivas llamadas cogerían la data de la caché y tardarían nada */
+  await getPlayList();
+  await getPlayList();
+  await getPlayList();
+})();
+
+async function getPlayList() {
+  const startDate = new Date();
+  await proxy.getPlayList('courses');
+  const endDate = new Date();
+
+  console.log(`El proceso se completó en ${(endDate.getTime() - startDate.getTime())/1000} segundos`);
+}
+Puedo ver que la salida es la esperada y sólo el primero tiene que esperar:
+
+El proceso se completó en 3.002 segundos
+El proceso se completó en 0 segundos
+El proceso se completó en 0 segundos
+El proceso se completó en 0 segundos
+
+		VIDEO 08 COMMMAND PATTERN -PATRONES DE COMPORTAMIENTO
+
+El patrón Command(O Comando) permite resolver una operación sin conocer el contenido de ésta o el receptor.Es decir,él sólo va a ejecutar un comando,sin importar el contenido(todo esto se resume en: sólo debo exponer el contrato y no las implementaciones)
+El cómo se cumpla esa tarea u operación no es importante,no nos interesa
+TIP: el gran beneficio que aporta este patrón es la segregación
+
+Caso práctico: un cliente realiza un pago mediante una credit card.El cliente no sabe cual,pero podría ser PayPal,MasterCard,...El cliente no tiene en ningun momento conocimiento del proveedor de servicios de pago.
+Crearemos para la solución una capa intermedia que se llamará CommandHandler y va a recibir una interfaz.Esa interfaz ejecutará cualquiera de los métodos de pago(por polimorfismo??)
+
+Esta abstracción tendrá la propiedad providerName y el método abstracto handle que maneja dicha transación:
+
+export interface ICommand {
+  providerName: string;
+  handle(): void;
+}
+
+Ahora tendré una carpeta payment-commands(fijate que cada proveedor de pago se ha vuelto un comando).Cada command es una implementación:
+
+import { ICommand } from "../command.interface";
+
+
+export class CulquiCommand implements ICommand {
+  public readonly providerName: string = "Culqui";
+
+  constructor( private readonly creditCardDef: CreditCardDto){}
+
+  handle(): void {
+    console.log(`Paying with ${this.providerName}`);
+    // logic to handle the payment with this provider
+  }
+}
+
+IMPORTANTE: fijate que las tres implementaciones/comandos tienen algo en común,y es que en el constructor van a recibir por composición el mismo objeto(en este caso es un objeto de transporte,por eso lo llama DTO(Data Transfer Object):
+
+type CreditCardType = 'visa' | 'mastercard' | 'paypal';
+
+class CreditCardDto {
+  constructor(
+    private readonly cardtype: CreditCardType,
+    private readonly cardCustomerFullName: string, 
+    private readonly cardNumber: string, 
+    private readonly cardCcv: string, 
+    private readonly transactionAmount: number,
+  ) { }
+}
+* Puedo usar un objeto de transporte porque todos van a compartir estos parámetros.Por último queda una clase que llamará a un método que trabaja con los comands:
+import { ICommand } from "./command.interface";
+
+
+export class PaymentMethodHandler {
+  process(command: ICommand): void {
+    console.log('Payment method handler has been started');
+    command.handle();
+  }
+  forceToProcess(commands: ICommand[]): void {
+    for (const cmd of commands) {
+      try {
+        if (cmd.providerName === 'Culqui') {
+          throw new Error('Culqui is not supported');
+        }
+      } catch (error) {
+        console.warn(`\tERR: ${error}`);
+      }
+    }
+  }
+}
+
+Ya solo falta llamar a esta clase:
+const creditCard = new CreditCardDto(
+  'visa',
+  'John Doe',
+  '1234567890123456',
+  '123',
+  100,
+)
+/* clase que llamaba a process(command:ICommand) */
+const paymentMethodHandler = new PaymentMethodHandler();
+
+/* fijate en la doble composición,process necesita dos objectos,ojo */
+paymentMethodHandler.process( new CulquiCommand(creditCard) );
+
+paymentMethodHandler.forceToProcess([
+  new CulquiCommand(creditCard),
+  new PaypalCommand(creditCard),
+  new MercadoPagoCommand(creditCard),
+])
+
+Fijate que este patrón lo que hace es encapsular cierta funcionalidad de una clase.
+
+

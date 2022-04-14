@@ -50,7 +50,33 @@ for(const x of Array(5)) {
 Se crearán 5 instancias determinadas en tiempo de ejecución.La clave está en el polimorfismo,lya que el método updateLogic mutará según sea una instancia u otra.
 Obviamente es un ejemplo muy sencillo.
 
-						VIDEO 10 PATRÓN BRIDGE O ADAPTER
+				VIDEO 06 PATRON ESTRUCTURAL DECORATOR
+
+El patrón decorator es un patrón estructural que me permite extender funcionalidad de forma dinámica(en runtime) desde una clase/objeto sin tener que recurrir a la herencia.
+Es muy común crear una estructura de clases supercompleja a la hora de querer añadir funcionalidad a una clase ya existente(y por ende a sus objetos).
+Imagina un juego donde los enemigos tienen power ups,por ejemplo se pueden poner armadura,lo que modifica la forma que tengan de andar o de defenderse.
+Incluso pueden tener un casco que los haga inmunes a los golpes en la cabeza.
+
+Si implemetará el camino del asinto crearia estas clases:
+EnemigoA
+EnemigoAConCasco
+EnemigoAConArmadura
+EnemigoAconArmaduraYCasco
+
+Esta solución crea una cantidad de clases simplemente inmantenible.Recuerda,composición siempre vs herencia(fijate que composición es pasar la instancia en el constructor)
+Fijate que el resultado de este patrón es como una cebolla,es una organización por capas,donde la capa interna es el personaje base y cada capa extra es un comportamiento añadible en runtime.
+
+Fijate que la idea de este patrón es como las matriuskas.Un decorador con casco tendrá dentro de sí a un decorador con armadura y éste tendrá dentro el enemigo base.Es como una composición o agregación de componentes.
+El hecho de que un decorador se pueda comportar como un componente de forma polimorfica me permite abstraerme de lo que tenga dentro(tengo un componente,pero este componente podria estar ya decorado,pero da igual,pues es un componente,y por ello lo puedo decorar de nuevo).
+
+IMPORTANTE:para que se dé este polimorfismo el componente será una abstracción.En este caso será la interface BaseEnemy,la cual implementarán los ConcreteEnemy:
+Y dado que estoy en TS mejor uso una abstract class para realmente forzar a que se implemente y desarrolle el método en cuestión:
+
+export interface Enemy {
+  computeDamage(receivedAttack: number): number
+}
+
+						VIDEO 10 PATRÓN BRIDGE 
 
 La definición formal es: el patrón bridge desacopla una abstración de su implementación, para que las dos puedan cambiar de forma independiente.
 

@@ -83,4 +83,10 @@ class Adapter implements ITarget {
 * Fijate que esta clase tiene una instancia privada del tipo Adaptee,la cual inicializa en el construcor,dandome acceso a ella en cuanto instancie Adapter tengo la instancia de Adaptee
 Notesé también que Adapter llama al método request,el cual debe llamarse como el del contrato final y que éste,simplemente llama a otro método(es aqui donde ocurre toda la magia).Al final llamar a request() simplemente llamará a specificRequest()
 
+class Adaptee {
+  specificRequest():void{
+    //...
+  }
+}
+
 Por último,fijate que estamos asumiendo que podemos instanciar Adaptee,pero podriamos ir con métodos estáticos.

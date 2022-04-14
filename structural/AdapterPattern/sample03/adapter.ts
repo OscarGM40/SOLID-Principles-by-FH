@@ -22,6 +22,7 @@ class GooglePixel implements Android {
 }
 
 /* dado que quiero pasar de iPhone a Android tengo que implementar esa interfaz,pues la otra ya la tengo */
+/* la clase adapter es esta,e implementa la interfaz que da acceso a lo que quiere el cliente.En este caso quiero usar MicroUSB */
 class LightningToMicroUSBAdapter implements Android {
   iphoneDevice: IPhone;
 
