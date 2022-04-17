@@ -607,4 +607,112 @@ paymentMethodHandler.forceToProcess([
 
 Fijate que este patrón lo que hace es encapsular cierta funcionalidad de una clase.
 
+VIDEO 09 PATRÓN OBSERVER
+
+Este patrón define un mecanismo para notificar un evento a sus suscriptores.
+Caso propuesto: una editorial cada semana emite un nuevo periódico.Este periódico es enviado a sus clientes(suscriptores).La editorial tendrá que notificar y enviar la nueva edición a esos clientes/suscriptores.
+
+TIP: la entidad que emite la notificación es el Subject.Los clientes son los Observer.Los Observers deben suscribirse a un Subject
+
+NOTA: como nueva funcionalidad se nos solicita que se mande un mensaje de texto y un correo eléctronico al usuario para confirmar su orden de compra.
+
+Solución: tendré una clase Shopping Cart con un método purchase.Otras dos clases SmsObserver y EmailObserver se suscribirán a esta clase Subject ShoppingCart,la cual mediante su método purchase hace el notify.Veamoslo en código:
+
+La clase Subject es fundamental:
+export abstract class Subject {
+  private observers: Observer[] = [];
+
+  public attach(observer: Observer): void {
+    /* quizas no haya que comparar objects asi */
+    if(!this.observers.some(x => x === observer)) {
+      this.observers.push(observer);
+    } else {
+      throw new Error("Observer already attached");
+      
+    }
+  }
+
+  public detach(observer: Observer): void {
+     this.observers.filter(x => x !== observer;
+  }
+
+  public notify(message: string): void {
+    this.observers.forEach(observer => observer.update(message));
+  }
+}
+
+Fijate que al llamar al subject.notify necesito abstracción y polimorfismo por cada implementación del Observer,ya que cada objeto tendrá comportamiento diferente(no es lo mismo mandar un Watsapp que un email).
+Esto lo consigo con la interface Observer que obligará a implementar update y se resolverá por polimorfismo:
+
+export interface Observer {
+  update(subject:any):void;
+}
+Fijate que dejamos para la clase que implemente ese any como quiera.En este caso serán Orders.pero puede ser cualquier cosa(importante la reusabilidad y escalabilidad que proporciona)
+
+Ahora es turno de los Observers,y en este caso veré como luce un CartItem y una Order:
+
+export class CartItem {
+  constructor(
+    public id: number, 
+    public name: string, 
+    public quantity: number, 
+    public unitPrice: number
+  ) {}
+}
+
+export class Order {
+  public readonly id: string;
+  constructor(
+    public readonly userId: number,
+    public readonly userFirstName: string,
+    public readonly items: CartItem[]
+  ){
+    const now = new Date();
+    this.id = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${orderNumber.toString().padStart(4, '0')}`;
+    orderNumber++;
+  }
+}
+Todo claro,una Order puede tener varios CardItems,lógicamente.Turno de la implementación del Subject:
+
+export class ShoppingCart extends Subject{
+  constructor(private userId: number,private userFirstName: string){
+    super();
+  }
+  private readonly items: CartItem[] = [];
+
+  add(item: CartItem) {
+    const CartItem = this.items.find(x => x.id === item.id);
+    if(CartItem){
+      throw new Error("The item is already in the cart");
+    }else {
+      this.items.push(item);
+    }
+  }
+    purchase(){
+      const order = new Order(this.userId, this.userFirstName, this.items);
+      this.notify(order);
+    }
+Turno de imlementar todo:
+
+/* Observers */
+const smsObserver = new SmsObserver();
+const emailObserver = new EmailObserver();
+
+/* Subject o Emitter */
+const shoppingCart = new ShoppingCart(1, "John");
+
+shoppingCart.attach(smsObserver);
+shoppingCart.attach(emailObserver);
+
+shoppingCart.add(new CartItem(1,"Electric Guitar",1,2800));
+shoppingCart.add(new CartItem(2,"Amp 60w Fender",1,1400));
+shoppingCart.add(new CartItem(3,"Addario Strings",1,0.75));
+
+shoppingCart.purchase();
+
+La salida es esta:
+SMS: John, your order 2022-04170001 by the amount of $4200.75 has been approved.
+Email: Your order 2022-04170001 has been shipped
+
+TIP: realmente un mismo problema puede ser solucionado con distintos patrones.La práctica y dominio de ellos me llevará a elegir mejores o más adecuadas soluciones.
 
