@@ -607,7 +607,7 @@ paymentMethodHandler.forceToProcess([
 
 Fijate que este patrón lo que hace es encapsular cierta funcionalidad de una clase.
 
-VIDEO 09 PATRÓN OBSERVER
+				VIDEO 09 PATRÓN COMPORTAMIENTO OBSERVER
 
 Este patrón define un mecanismo para notificar un evento a sus suscriptores.
 Caso propuesto: una editorial cada semana emite un nuevo periódico.Este periódico es enviado a sus clientes(suscriptores).La editorial tendrá que notificar y enviar la nueva edición a esos clientes/suscriptores.
@@ -716,3 +716,124 @@ Email: Your order 2022-04170001 has been shipped
 
 TIP: realmente un mismo problema puede ser solucionado con distintos patrones.La práctica y dominio de ellos me llevará a elegir mejores o más adecuadas soluciones.
 
+			VIDEO 10 PATRON COMPORTAMIENTO STRATEGY
+
+Este patrón permite definir una familia de algoritmos(un conjunto de soluciones) para cambiar el comportamiento de mi aplicación en tiempo de ejecución
+Es decir un objeto podrá decidir en runtime que solución implementar entre un grupo de ellas.
+
+Caso propuesto: nuestro módulo de Checkout de pagos trabaja con Paypal pero muy pronto se aprobará el convenio con VISA y MasterCard.Luego nuestro módulo debe aprender a trabajar con éstos.
+
+Nuestra primera solución podría ser un conjunto de ifs comprobando el tipo de pago.Sin embargo este código no escalará bien.Además si es Visa o MasterCard necesito el cvv o pin y numero de tarjeta,pero si es paypal necesito otras propiedades.
+
+La solución dos escala mejor y seria usar tres métodos con los argumentos necesarios(payWithPaypal(),payWithVisa()...Si bien es una solución mejor,que desacopla la lógica de un único metodo a tres esta clase también tiene demasiada lógica de negocio.Testear tantas opciones también sería engorroso.Mantenerlo también.También hay duplicidad de código(por ejemplo,tendría tress peticiones a la API con el userID para ver si existe etc...)
+
+La opción tres es la solución,y es la implementación del patrón strategy:
+1- Definir una interface base de las estrategias
+
+export interface PaymentStrategy {
+    execute(userId: string,amount: number): PaymentResponse;
+  }
+
+export interface PaymentResponse {
+  isSuccess: boolean;
+  errorMessage?: string;
+}
+* Tiene el userId y el amount ya que lo tendrá cualquier estrategia.Devuelve una esponse concreta.Viene el problema,para cada estrategia se necesitan parámetros diferentes.Crearé una interfaz para cada estrategia con lo que sea intrinseco a esa estrategia:
+
+** Interfaz para un pago con tarjeta:
+
+export interface PaymentCardStrategy extends PaymentStrategy{
+    cardNumber: string;
+    cvv: string;
+}
+
+** Otra interfaz tiene la posibilidad de requerir un email:
+
+export interface PaymentInternet extends PaymentStrategy {
+  userEmail: string;
+}
+
+** Fijate que ha metido un nivel de abstracción en el medio.Genial,más reusabilidad.Veamos ahora las concrecciones o implementaciones
+
+Pagos con MasterCard:
+export class MasterCardStrategy implements PaymentCardStrategy {
+  constructor(public cardNumber: string, public cvv: string) { }
+
+  execute(userId: string, amount: number): PaymentResponse {
+    console.log("The user has paid " + amount + " using MasterCard");
+    return { isSuccess: true }
+  }
+}
+
+Fijate que MasterCardStrategy implementa la interfaz que a su vez hereda de la Strategia Base.Asi que debe desarrollar el método execute.
+
+Pagos con Visa(igual que MasterCard):
+export class VisaStrategy implements PaymentCardStrategy {
+  constructor(public cardNumber: string, public cvv: string) { }
+  
+  execute(userId: string, amount: number): PaymentResponse {
+    console.log("The user has paid " + amount + " using Visa");
+    return { isSuccess: true }
+  }
+}
+
+Ahora si,pagar con Paypal cambiará un poco.
+export class PayPalStrategy implements PaymentInternet {
+  constructor(public userEmail: string) { }
+
+  execute(userId: string, amount: number): PaymentResponse {
+    console.log("The user has paid " + amount + " using PayPal");
+    return { isSuccess: true }
+  }
+}
+
+Con todo esto la clase que necesitaba la ayuda luce asi:
+
+export class Checkout {
+  private context?: PaymentStrategy;
+
+  /* es para cambiar en runtime?? */
+  public setStrategy(context: PaymentStrategy): void {
+    this.context = context;
+  }
+
+  /* polimorfismo detected */
+  public execute(userId: string, amount: number): PaymentResponse {
+    if(!this.context) {
+      throw new Error("No strategy has been set");
+    }
+    return this.context.execute(userId, amount);
+  }
+}
+Fijate en los estandares,composición sobre herencia y polimorfismo.Perfecto
+Ahora ya puedo mandar cualquier tipo de pago,la estrategia irá cambiando en runtime y adaptandose(fijate como a la instancia de Checkout se le inyecta una nueva instancia de Strategy según necesidad)
+
+const checkout = new Checkout();
+
+let userId = "usr-001",
+  userEmail = "eduardo@manostijeras.com",
+  cardNumber = "1234567890123456",
+  cvv = "123",
+  amount = 2000,
+  paymentMethod = 'paypal';
+
+  /* cambio de estrategia en caliente o runtime */
+if (paymentMethod === 'paypal') {
+  checkout.setStrategy(new PayPalStrategy(userEmail));
+}
+
+if(paymentMethod === 'visa') {
+  checkout.setStrategy(new VisaStrategy(cardNumber, cvv));
+}
+
+if(paymentMethod === 'mastercard') {
+  checkout.setStrategy(new MasterCardStrategy(cardNumber, cvv));
+}
+
+checkout.execute(userId, amount);
+Fijate también que la clase Checkout no sabe como resolver el problema.Lo único que hace es llamar a una clase/strategy u otra en función del tipo de payment.
+A diferencia de antes,que tenía mucha lógica de negocio
+
+IMPORTANTE: la estrategia o algoritmo se resuelve en tiempo de ejecución,ojo.Ademas de que puede cambiar libremente y sin acoplamiento entre ellas.Esto deja el código altamente escalable.
+
+Por último fijate que siempre hay flexibilidad en cuanto a aplicar la solución usando más abstracciones ,etc...
