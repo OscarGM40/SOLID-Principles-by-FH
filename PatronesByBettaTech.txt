@@ -1,7 +1,9 @@
+					PATRONES DE DISEÑO POR BETTATECH
+Recuerda que cuando quiera tabular en los snipets de VSC tengo que ser muy preciso y no salir con el escape.
 
 Source: https://www.youtube.com/watch?v=lLvYAzXO7Ek&list=PLJkcleqxxobUJlz1Cm8WYd-F_kckkDvc8&index=3&ab_channel=BettaTech
 
-				VIDEO 02 PATRON CREACIONAL FACTORY
+				VIDEO 02 PATRON CREACIONAL SIMPLE FACTORY
 
 Imagina un videojuego con varias clases de enemigos.O cualquier cosa con varias versiones diferentes.Todas ellas implementaran una interfaz(Entity en este caso):
 
@@ -49,11 +51,148 @@ for(const x of Array(5)) {
 }
 Se crearán 5 instancias determinadas en tiempo de ejecución.La clave está en el polimorfismo,lya que el método updateLogic mutará según sea una instancia u otra.
 Obviamente es un ejemplo muy sencillo.
+		
+				VIDEO 03 PATRON CREACIONAL ABSTRACT FACTORY
+
+Este patrón tiene mucha relación con Simple Factory.El ejemplo es un caso de uso de manual.Sería el caso de SuperMario,que permite modificar los gráficos del nivel,cambiando completamente la visualización de cada objeto.
+Definición: es un patrón de diseño que provee una interficie para crear familias de objetos relacionados o dependientes sin especificar su clase concreta
+
+Fijate que en nuestro ejemplo esos objetos estan relacionados por el tema(graficos de GameBoy o graficos estilos NintendoDS).
+Y fijate también en lo de no especificar su clase concreta,es decir sigo trabajando 100% con abstracciones.
+Montar todo esto es un poco lioso,pero no dificil.
+
+1- En vez de crear una factoria con un método para crear cierto objeto tengo una factoria abstracta con varios métodos que crean varios tipos de objeto:
+
+export interface AbstractFactory {
+  createMoneda():Moneda;
+  createBloqueInterrogante(): BloqueInterrogante;
+
+2- Es responsabilidad de la implementación concreta(clase) de esta factoria abstracta implementar estos métodos y crear instancias concretas:
+
+export class GameBoyItemFactory implements AbstractFactory {
+  createMoneda():Moneda {
+    return new GameBoyMoneda();
+  }
+  createBloqueInterrogante():BloqueInterrogante {
+    return new GameBoyBloqueInterrogante();
+  }
+}
+export class NintendoDSItemFactory implements AbstractFactory {
+  createMoneda():Moneda {
+    return new NintendoDSMoneda();
+  }
+  createBloqueInterrogante():BloqueInterrogante {
+    return new NintendoDSBloqueInterrogante();
+  }
+}
+ 
+Otro ejemplo podria ser el tipico darkTheme/lightTheme.Una implementación crearía elementos gráficos en modo claro y otra en modo oscuro.
+IMPORTANTE: fijate que NintendoDSMoneda es una interface,luego crearía MonedaPlat,MonedaOro,etc.Esto lo puedo ver en el diagrama UML adjunto.
+NOTA: es responsabilidad de las implementaciones de la AbstractFactory instanciar unas clases u otras,pero desde fuera nunca se sabe ni se debería saber con qué clase concreta estoy trabajando es por esto que instancian la interfaz que resolverá por polimorfismo la clase
+
+				VIDEO 04 PATRON COMPORTAMIENTO STRATEGY
+
+Este patrón es un patrón de comportamiento,por lo que es un patrón que sirve para encapsular lógica.El objetivo de este patrón es poder tener diferentes algoritmos(soluciones),diferentes lógicas para asi tener la capacidad de poder cambiar de una a otra de una forma muy elegante(en runtime).
+Imaginemos el juego de Pokemon que tiene miles de ataques diferente(pueden hacer daño,bajar defensas,subir las tuyas,...)
+
+Implementar esto podría derivar en un super-método como este:
+function computePokemonAttack(battle:BattleState,SelectedAttack:Attack){
+if(attack.type === 'PHYSICAL'){
+  battle.foePokemon.makePhysicalDamage();
+else if (attack.type === 'SPECIAL'){
+  battle.foePokemon.makeSpecialDamage();
+if(attack.diminishesPhysicalAttackStats ...
+
+Este método es insostenible,inmantenible,ilegible,...En pokemon existen más de 700 ataques diferentes,este método terminaría siendo gigantesco y super complejo.
+
+ Una posible solución es el patrón Strategy,ya que permite ejecutar diferentes "lógicas" o estrategias.La clave está en crear diferentes objetos que representen estas estrategias.Estas estrategias vendrán todas de la Interfaz Base Strategy,con lo que son intercambiables y usables de forma polimorfica(fijate que incluso podría crear subgrupos con cuidado)
+
+1- El código anterior quedaría asi.La función gigante pasa a:
+
+function computeTurn(state:BattleState,myAttack: AttackStrategy,foeAttack: AttackStrategy) {
+ state = myAttack.ejecutarAtaque(state);
+ state = foeAttack.ejecutarAtaque(state);
+
+2- La interfaz para una estrategia o algoritmo queda asi:
+export interface AttackStrategy {
+  ejecutarAtaque(battle:BattleState):BattleState
+
+3- Ahora ya solo tengo que definir estrategias:
+export class RainStrategy implements AttackStrategy {
+  ejecutarAtaque(battle:BattleState):BattleState {
+  let randValue = Math.random();
+  if( randValue > 0.5) {
+     battle.startRain();
+  return battle
+
+* Y otra que baje la defensa
+export class DiminishStatsStrategy implements AttackStrategy {
+  private stat: PokemonStat;
+  constructor(stat:PokemonStat){
+  this.stat=stat;
+  }
+  ejecutarAtaque(battle:BattleState):BattleState {
+  battle.foePokemon.diminishStat(this.stat)
+  return battle;
+
+Lo mejor de todo es que puedo crear cualquier tipo de ataque que no tendré que modificar la función que los utiliza.
+TIP:en cuanto quiera hacer esto un poco más complejo este código se queda un poco cojo y se suele combinar con el abstract factory(en vez de crear estrategias una por una las creo con el patrón abstract factory,creando grupos etc,...)
+Fijate que abstract factory crea una interfaz para grupos de objetos relacionados(magia,defensa,ataque) sin especificar su clase concreta,con lo que le va al pelo
+También combina muy bien con State o Composite
+
+Ejemplo dos: impresiones de un log registry a un fichero.La Strategy sería la propia impresion.Esta interfaz la define
+export interface Logger {
+  write(message:string):void
+
+1- Una estrategia sería simplemente escribir por consola
+export class ConsoleLogger implements Logger {
+  write(message: string):void {
+    console.log(message);
+
+2- Pero otra sería escribir a un fichero:
+const fs = require('fs');
+export class FileLogger implements Logger {
+  private filePath:string;
+  constructor(filePath:string) {
+    this.filePath = filePath;
+  }
+  write(message:string):void {
+  fs.appendFileSync(this.filePath,message)
+
+Fijate que el patrón Strategy intenta desacoplar la lógica de varias posibles acciones de una clase.Es una gran forma de delegar funcionalidades que pueden ir cambiando a lo largo del tiempo.Siempre que tenga cierta lógica que puede cambiar debería sopesar si puedo implementar este patrón. 
+Implementar este patrón hace que mi programa termine siendo muy modular,pudiendo combinar las diferentes partes para conseguir diferentes funcionalidades(y fijate si encima lo combino con otros).
+
+				VIDEO 05 PATRON CREACIONAL SINGLETON
+
+Seguramente es el patrón más famoso.Hay mucha controversia,ya que muchas veces se implementa sin ser necesario.Otros piensan que es un antipatrón
+El objetivo de utilizar el patŕon Singleton es el de asegurarme que existe tan sólo una única instancia de una clase concreta.De echo,será imposible instanciar otra,pues se me devolverá la primera.
+No es un patrón que se utilice cuando quiero usar una instancia,sino cuando quiero asegurarme que no se pueda crear más de una.
+Aparte de asegurarme de esto Singleton provee una accesibilidad global a esta instancia,pudiendo accesarla desde cualquier parte del programa.
+Hay muy pocos casos de uso donde realmente es necesario este patrón,uno de ellos es acceder a recursos que deban ser accedidos de forma individual(un fichero de logs,donde no quiera que varias instancias escriban al mismo archivo).
+
+Bien,pero,¿cómo consigue Singleton esto?.La clave es un constructor privado y una propiedad estática(y privada) del mismo tipo que la clase:
+
+class Unique {
+  private static instance: Unique;
+
+  private constructor(){};
+
+  public static getInstance():Unique {
+    if(!Unique.instance){
+      Unique.instance = new Unique();
+    }
+    return Unique.instance;
+  }
+}
+Fijate que es la propia clase la que gana el control de como instanciar sus objetos,y que además bloqueo el acceso desde fuera de instanciarla,sólo dejo el método público getInstance(por convención).
+Es responsabilidad de la clase guardar su instancia.
+En testing o conexiones a DB y videojuegos es común usar este patrón.
 
 				VIDEO 06 PATRON ESTRUCTURAL DECORATOR
 
-El patrón decorator es un patrón estructural que me permite extender funcionalidad de forma dinámica(en runtime) desde una clase/objeto sin tener que recurrir a la herencia.
+El patrón decorator es un patrón estructural que me permite extender funcionalidad/comportamientos de forma dinámica(en runtime) desde una clase/objeto sin tener que recurrir a la herencia.
 Es muy común crear una estructura de clases supercompleja a la hora de querer añadir funcionalidad a una clase ya existente(y por ende a sus objetos).
+
 Imagina un juego donde los enemigos tienen power ups,por ejemplo se pueden poner armadura,lo que modifica la forma que tengan de andar o de defenderse.
 Incluso pueden tener un casco que los haga inmunes a los golpes en la cabeza.
 
@@ -64,17 +203,129 @@ EnemigoAConArmadura
 EnemigoAconArmaduraYCasco
 
 Esta solución crea una cantidad de clases simplemente inmantenible.Recuerda,composición siempre vs herencia(fijate que composición es pasar la instancia en el constructor)
-Fijate que el resultado de este patrón es como una cebolla,es una organización por capas,donde la capa interna es el personaje base y cada capa extra es un comportamiento añadible en runtime.
 
-Fijate que la idea de este patrón es como las matriuskas.Un decorador con casco tendrá dentro de sí a un decorador con armadura y éste tendrá dentro el enemigo base.Es como una composición o agregación de componentes.
+El comportamiento base sería el enemigo sin nada,despues cada decorador modificará esta clase base.
+IMPORTANTE:no sólo puedo añadir un decorador a un enemigo/objeto base,sino a cualquiera ya modificado/decorado,con lo que las posibilidades son infinitas(puedo decorar a un enemigo con casco poniendole una armadura,y a éste con un escudo,etc)
+
+Fijate que la idea de este patrón es como las matriuskas.Un decorador con casco tendrá dentro de sí a un decorador con armadura y éste tendrá dentro el enemigo base.Es como una composición o agregación de componentes(un decorador no solo decora un componente,sino que también es un componente,con lo que puede decorarse).Fijate que esto es muy importante,asin
+
+Fijate que el resultado de este patrón es como una cebolla,es una organización por capas,donde la capa más  interna sería el personaje base y cada capa extra es un comportamiento(decorador) añadible en runtime.
+
 El hecho de que un decorador se pueda comportar como un componente de forma polimorfica me permite abstraerme de lo que tenga dentro(tengo un componente,pero este componente podria estar ya decorado,pero da igual,pues es un componente,y por ello lo puedo decorar de nuevo).
 
-IMPORTANTE:para que se dé este polimorfismo el componente será una abstracción.En este caso será la interface BaseEnemy,la cual implementarán los ConcreteEnemy:
-Y dado que estoy en TS mejor uso una abstract class para realmente forzar a que se implemente y desarrolle el método en cuestión:
+IMPORTANTE: para que se dé este polimorfismo el componente,lógicamente, será una abstracción.En este caso será la interface Enemy,la cual implementarán los ConcreteEnemy:
 
 export interface Enemy {
   computeDamage(receivedAttack: number): number
 }
+
+La concreccion sería asi:
+class ConcreteEnemy extends Enemy { <- implements si es interface
+  computeDamage(receivedAttack): number {
+  console.log('Oh nooo');
+  return 100;
+}
+
+Y la abastracción para los decoradores sería asi(puede ser abstract class??):
+class EnemyDecorator extends Enemy {
+  decoratedEnemy: Enemy;
+  
+  constructor(enemyToDecorate: Enemy){
+  this.decoratedEnemy=enemyToDecorate;
+  }
+  computeDamage(receivedAttack):number {
+  
+};
+
+Ahora ya puedo implementar decoradores:
+class ConcreteEnemyDecorator extends EnemyDecorator { <- fijate que todo dios es un Enemy
+
+  computeDamage(receivedAttack):number {
+    this.decoratedEnemy.computeDamage(receivedAttack)
+
+La implementación de todo esto sería algo así:
+function xxx(){
+  //creo el enemigo base
+  let enemigoDesnudo = new ConcreteEnemy();
+  // añado el primer decorador
+  let enemigoConArmadura = new ArmourDecorator(enemigoDesnudo); <- clave!!
+  //añado otro decorador
+  let enemigoConArmadurayCasco = new HelmetDecorator(enemigoConArmadura);
+
+La clave es meter en el constructor el componente ya decorado o no previo.
+El orden en que implemente los decoradores puede tener influencia en el comportamiento,ojo!.Si un decorador dividiera el daño por dos no es lo mismo implementarlo antes o despues de un ataque.
+Añadir un nuevo decorador implicaría simplemente añadir una clase nueva lo que facilita en gran medida la extensión del sistema.
+
+			VIDEO 07 EJEMPLO DEL PATRON ESTRUCTURAL DECORATOR
+
+Bien,lo primero es identificar que función va a tener la lógica con el polimorfismo,en este caso es takeDamage():
+PASO UNO: llegar a la función que quiero decorar
+let enemy = new BaseEnemy();
+
+/* fijate que lo que quiero es decorar la función takeDamage.Esto es la base de todo */
+let computedDamaged = enemy.takeDamage();
+PASO DOS : creo la abstracción para enemigos y una concrección:
+export interface Enemy {
+  takeDamage(): number;
+}
+Clase:
+import { Enemy } from "../abstracciones/Enemy";
+
+export default class BaseEnemy implements Enemy {
+  takeDamage(): number {
+    return 10;
+  }
+}
+Hasta aqui todo muy fácil.Es desde aqui desde donde quiero tener decoradores que cambien el comportamiento de esa función en caliente además.
+IMPORTANTE: para implementar el patrón tengo que crear otra abstracción que especifique qué es un decorador.Recuerda que además es un BaseEnemy esa abstracción.
+
+/* por polimorfismo un decorador será un Enemy */
+export default abstract class EnemyDecorator implements Enemy {
+  takeDamage(): number { }
+}
+Y es aqui donde tengo que montar ese sistema de capas.Es tan fácil como crear una propiedad de tipo Enemy y dejar que se resuelva más adelante el método abstracto takeDamage que tendrán que desarrollar las concrecciones de decorador.
+PASO TRES
+export default abstract class EnemyDecorator implements Enemy {
+  protected enemy: Enemy;
+  
+  constructor(enemy: Enemy) { this.enemy = enemy; }
+
+  abstract takeDamage(): number { return this.enemy.takeDamage(); }
+
+}
+PASO CUATRO: ahora si,ya puedo empezar a crear concrecciones que serán un decorador(implementarán esa abstract class,fijate que tuvo que ser abstract class la abstracción para un decorador):
+NOTA:es aqui donde debo tener bien claro que tengo acceso a esa propiedad protected y al método takeDamage y puedo sobreescribirlo:
+
+export class HelmetDecorator extends EnemyDecorator {
+  /* fijate que tengo acceso a enemy pues es la subclase y la declaré protected,otra cosa importante.Además puedo sobreescribir takeDamage.Ni siquiera usaré el constructor,aunque si lo usará sería el mismo resultado */
+  takeDamage(): number {
+    return this.enemy.takeDamage()/2;
+  }
+}
+Ya puedo crear una instancia de esta clase y pasarla por constructor el enemy(fijate que pude haber puesto el constructor,pero me vale el de la abstract class):
+
+let enemy = new BaseEnemy();
+let enemyWithHelmet = new HelmetDecorator(enemy);
+let computedDamaged = enemyWithHelmet.takeDamage();
+
+Fijate que esto abre un mundo,podría programar bufos,armadura,golpes que metan estados,...(debería hacer el juego de Python)
+TAREA: implementar decorador para armadura(daño 1/3):
+
+export default class ArmourDecorator extends EnemyDecorator {
+  takeDamage(): number {
+    return this.enemy.takeDamage() / 3;
+  }
+}
+let enemy = new BaseEnemy();
+let enemyWithHelmet = new HelmetDecorator(enemy);
+let enemyWithArmour = new ArmourDecorator(enemyWithHelmet);
+let computedDamaged = enemyWithArmour.takeDamage();
+console.log(computedDamaged);
+> 1.6666667 <- puedo ver que se dividio primero por dos y despues ese 5 por 3.Aqui entraria el orden etc...
+TIP: fijate que podría hacer lo mismo con varios métodos en vez de uno.Genial
+
+				VIDEO 08 OBSERVER behaviour pattern
+
 
 						VIDEO 10 PATRÓN BRIDGE 
 
