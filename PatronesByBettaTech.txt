@@ -326,6 +326,106 @@ TIP: fijate que podría hacer lo mismo con varios métodos en vez de uno.Genial
 
 				VIDEO 08 OBSERVER behaviour pattern
 
+El patrón observer está implementado en muchisimas librerias de programación.Primero veré la teoria y despues el código.
+IMPORTANTE: el patŕon observer se utiliza cuando aparece la necesidad de notificar cambios de estado a algun objeto.
+CASO PRÁCTICO: imagina un canal de youtube.Este canal(que será un objeto) tiene un estado concreto en un momento determinado del tiempo.Me encuentro ante la necesidad de que cada vez que aparezca un video nuevo notificar a todos los suscriptores
+Fijate que el canal de Youtube sería el objeto a observar(el Observable) y cada suscriptor sería el objeto que observa(el Observador).Esto debo tenerlo claro.
+Fijate que el Observable necesita saber quienes están observando,sus Observers,para asi notificarlos.El Observable necesita acceder a los Observers.
+Dado que tiene está funcionalidad el Observable necesitará añadir y eliminar Observers(será una abstracción):
+
+Subject(interface para el Observable)    <- interface Observer
+  + attach(o: Observer)                       +update()
+  + detach(o: Observer)
+  + notify()
+
+* De aqui saldrán concreciones,de ambas interfaces.
+ConcreteSubject                       ConcreteObserve
+  - state: State                      - observerState: State
+  + getState (): State                + ConcreteObserver(subject: Subject)
+  + setState (s: State)               + update()
+
+Fijate que ni notify ni update llevan argumentos.La clave está  en la composición ya que ConcreteObserver lleva por constructor una instancia de un Observable(de echo,esto es vital).De esta forma el Observador tiene acceso a los métodos del Observable y asi acceder al nuevo estado cada vez que reciba una notificación.
+
+NOTA: el Observer debe poder hacer algo con la notificación,de hay el update(sería recibir el mensaje del video nuevo,etc...)
+
+Veamoslo en código,ya que quedará mucho más claro:
+Abstracciones(fijate la importancia de poder atarse a un Observable con attach)
+import { Observer } from "./video-observer"
+
+export interface Observable {
+  attach(o: Observer):void
+  detach(o:Observer):void
+  notify():void
+}
+
+export interface Observer {
+  update():void;
+}
+Y las concrecciones sería un Canal de Youtube y los Suscriptores.Queda claro qué interfaz implementa cada uno,pues el canal es el Observable o fuente de emisiones:
+export class YoutubeChannel implements Observable{
+export class Subscriber implements Observer {} 
+
+IMPORTANTE: otro concepto clave es que el Observable debe tener un listado con todos los Observers que tiene.En este caso será un propiedad:
+
+export class YoutubeChannel implements Observable{
+  private channelSubscribers: Observer[] = []
+
+  attach(o: Observer): void {
+    this.channelSubscribers.push(o);
+  }
+  detach(o: Observer): void {
+    this.channelSubscribers = this.channelSubscribers.filter(subscriber => subscriber !== o);
+  }
+  notify(): void {
+    this.channelSubscribers.forEach(subscriber => subscriber.update());
+  }
+}
+Notify simplemente recorre el arreglo de Observers y llama a su observer.update().Perfecto.
+
+IMPORTANTE: recuerda también que el Observer mantiene una referencia en el constructor al Observable,para poder hacer GET de la información necesaria:
+
+export class Subscriber implements Observer {
+  private observable: Observable;
+
+  constructor(o: Observable){
+    this.observable = o;
+    // this.observable.attach(this); //mejor a mano
+  }
+  update(): void {
+    console.log("New video posted");
+  }
+
+Aún faltaria que el Observable realice algo, y que esa lógica la coja el hijo(fijate de nuevo que esto es otro concepto clave,el hijo debe poder acceder):
+
+  addNewVideo(videoTitle: string): void {
+    this.lastVideoPosted = videoTitle;
+    this.notify();
+    console.log("New Youtube video added to channel");
+  }
+
+Ya solo faltaría instanciar las concreciones(fijate que podria haber echo el attach automáticamente,quizas pierda flexibilidad por ello):
+
+let channel = new YoutubeChannel();
+let s1 = new Subscriber(channel);
+let s2 = new Subscriber(channel);
+
+channel.attach(s1);
+channel.attach(s2);
+
+channel.addNewVideo("Publicado video 1 del patrón observer");
+
+Si ejecuto el programa:
+ts-node src/main.ts 
+New video posted!!
+Publicado video 1 del patrón observer
+New video posted!!
+Publicado video 1 del patrón observer
+
+Si bien son un par de pasos,es sencillo para mi esto.Debo identificar cuando aparece esa necesidad de notificar cambios de estado a un objeto/s para implementar el patrón.
+
+					VIDEO 09 COMPOSITE PATTERN 
+
+
 
 						VIDEO 10 PATRÓN BRIDGE 
 
