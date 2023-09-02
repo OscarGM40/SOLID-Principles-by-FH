@@ -1,0 +1,656 @@
+      CURSO UDEMY PRINCIPIOS SOLID Y CLEAN CODE BY FERNANDO HERRERA
+
+Principales referencias del curso
+
+El curso cuenta con muchas referencias al libro(ya lo tengo):
+
+Clean JavaScript de Miguel A. Gómez
+
+IMPORTANTE:
+No es necesario comprarlo, es una simple referencia por si quieren mayor información
+
+Refactoring Guru: Khmelnitske shosse
+
+Sitio web: https://refactoring.guru/
+
+Entre otros sitios web con referencias en las presentaciones que verán un poco más adelante.
+
+NOTA: fijate que tienen una comunidad de Discord para devs
+
+      SECCION 02 CLEAN CODE Y DEUDA TÉCNICA
+
+La deuda técnica en pocas palabras no es más que falta de calidad en nuestro código, ya sea intencionalmente o sin intención.No necesariamente es código, puede ser documentación, falta de pruebas, algun refactor.Siempre hay que pagar las deudas, normalmente en forma de refactor.
+
+En esta sección estaremos hablando y haciendo ejercicios sobre:
+1- ¿Qué es la deuda técnica?
+2- ¿Cómo se paga la deuda técnica?
+3- Refactorización
+4- Nombres de variables
+5- Nombres para funciones
+6- Ejercicios de refactorización
+7- Principio DRY
+
+Esta sección procura que empecemos a escribir código que sea fácil de leer por nosotros y otros desarrolladores.
+
+      VIDEO 11 DEUDA TÉCNICA Y CLEAN CODE
+
+De nuevo la deuda técnica no es más que falta de calidad en el código,que usualmente repercutirá en costos futuros,normalmente económicos:
+
+1 - Tiempo en realizar mantenimientos
+2 - Tiempo en refactorizar código
+3 - Tiempo en comprender el código
+4 - Tiempo adicional en la transferencia de nuestro código hacia otras personas
+
+Según el esquema de Martin Fowler la deuda técnica se puede dividir en cuatro cuadrantes:
+
+Imprudente & deliverada: no hay tiempo para hacerla y no nos importa                
+
+Imprudente & inadvertida/no deliverada: suele ser la más peligrosa ya que se genera por el total desconocimiento o falta de experiencia.Un senior cuando no sabe algo nunca debe de responder algo por decir
+
+Prudente & deliverada: sabemos que tenemos esa deuda y tenemos consciencia que hay que refactorizar.Es muy común cuando hay prisa
+
+Prudente & inadvertida: normalmente al empezar un proyecto sabemos mucho menos sobre él,al ir avanzando el proyecto nos damos cuenta como dev que hemos echo cosas mal y sabemos como corregirlas(es inadvertida porque no sabiamos el futuro pero prudente porque la controlamos en ese futuro mediante refactors,etc)
+
+Caer en deuda técnica es normal y a menudo es inevitable.La deuda tecnica la debo pagar mediante refactorización.Muchas veces he dejado que lo hicieran otros por vagancia o por no meterme en el trabajo del senior,podia haber echo algo más al respecto, y me tocará mejorar en refactorizar.Lo haré.
+
+Refactorizar es un procseo que tiene como objetivo mejorar el código sin alterar su comportamiento para que sea más entendible y tolerante al cambio.
+NOTA: cuando haga una refactorización fuerte debo acompañarla de pruebas automáticas. 
+Fijate que ahora voy a tener que hacer muchos más refactors(y acompañarlos de testing)
+
+      VIDEO 12 NOMBRES PRONUNCIABLES Y ENTENDIBLES
+
+Los nombres de las variables,constantes o métodos siempre deben ser pronunciables y expresivos.Por ejemplo:
+
+const n = 53; <- MAL, no sé lo que es n   const numberOfUnits = 53; BIEN, me dice que es el número de unidades
+const cat = "T-SHIRT" <- MAl              const category = "T-SHIRT"; BIEN, el nombre me dice que es una categoría
+
+    VIDEO 13 NAMING SEGUN EL TIPO DE DATO QUE CONTIENE
+
+Si es un arreglo pluralizar su nombre es una buena idea:
+
+const fruit = ['manzana','fresa','naranja'] <- MAL, DEBERIA SER FRUITS
+const fruits = ['manzana','fresa','naranja'] <- BIEN, los fruitis eran los mejores, sobre todo mochilo
+const fruitNames = ['manzana','fresa','naranja'] <- MEJOR, ya que realmente tengo una lista de nombres de frutas (interezanteh)
+
+TIP: si tuviera instancias de frutas si que tendría más sentido usar fruits.En este caso es una arreglo de nombres de frutas y no de frutas,realmente:
+const fruits = [{name:"manzana',peso:1},{name:'naranja',peso:2}]
+
+Si son boleanos el uso de prefijos como is | has | can puede ayudar muchisimo a que la variable tengo  mucho más sentido semántico:
+
+// MAL
+const open = true;
+const write= true;
+const active = false;
+
+Además siempre debo tratar de ir por el naming positivo, y no por el negativo:
+// BIEN (no usar isNotOpened,ya lo negaré)
+const isOpened = true;
+const canWrite: true;
+const hasBeenActivated = false;
+
+Si es un number en general min | max | total puede serme util.También puedo usar totalOfXXX
+// MAL
+const fruits = 3;
+const cars = 10;
+
+// BIEN
+const maxFruits = 5;
+const totalOfCars = 10;
+
+Si es una funcion, dado que las funciones en general describen acciones, es buena idea que el naming describa esa accion.Normalmente necesitaré un verbo + un sustantivo.Además debe abstraerse de la implementación de lo que hace la función:
+// MAL
+createUserIfNotExists() <- mal, se ha metido en lo que hace la función, ya va a determinar ella lo que se hará si no existe el User
+updateUserIfNotEmpty() <- lo mismo, es muy asinta esta gente
+sendEmailIfUserExists() <- pues ya me estoy cansando de esto,si
+
+// BIEN
+createUser() <- pues ni que estuviera claro que era el naming adecuado
+updateUser()
+sendEmail()
+
+          VIDEO 14 EJERCICIO DE NAMING SEGUN TIPO DE VARIABLE
+
+Simplemente realizar la práctica.
+Fijate que una buena comprobación es simplemente leer el nombe que le he dado y ver si realmente me da el mayor significado semántico de lo que va a  almacenar esa variable
+
+      VIDEO 15 CONSIDERACIONES PARA EL NAMING EN CLASES
+
+1- El nombre de la clase es lo más importante de la clase.Debo tomarme el tiempo necesario para escoger uno apropiado
+2- Deben estar formados por un sustantivo o frases de sustantivo
+3- No deben ser demasiado genéricos ni demasiado especificos
+
+Por ejemplo, nombres como Data, Info, Processor,Manager para una clase son demasiado genéricos mientras que otros como SpecialViewingCaseMonsterManagerEventsHandler ... son demasiado especificos y deberia usar algo más sencillo
+
+TIP: realizarme preguntas como ¿que hace la clase?,¿como va a realizar esa clase su trabajo? etc me ayudará mucho a elegir el nombre
+
+    VIDEO 16 CONSIDERACIONES PARA EL NAMING EN FUNCIONES Y ARGUMENTOS
+
+TIP: cada función debería hacer exactamente lo que su nombre indica(y no más).Por ejemplo una función que envie un email no debería comprobar si el usuario tiene password,etc, o incluso crear el usuario
+
+NOTA: cuando defino una función entre parentesis van los parámetros:
+sendEmail(toWhom: string) <- toWhom es el parámetro
+Cuando la llamo la llamo con argumentos:
+sendEmail("fernando@google.com") <- un argumento es el valor con el que llamo a un parámetro 
+
+No hay un limite en el número de parámetros que puedo definir en la función, pero se recomienda que se limiten a máximo 3 parámetros posicionales:
+
+** Esto es un ejemplo de una función con demasiados parámetros
+function sendEmail(
+      toWhom: string,
+      from: string,
+      body: string,
+      subject,
+      apiKey,
+)
+
+Obviamente si tengo tantos parámetros debo crearme una interface:
+
+interface SendEmailOptions {
+      toWhom: string;
+      from: string;
+      body: string;
+      subject: string;
+}
+function sendEmail(options: SendEmailOptions) <- ahora ya solo hay un parámetro.
+
+            VIDEO 18 DETALLES ADICIONALES SOBRE FUNCIONES
+
+TIPS para funciones:
+1- la simplicidad es fundamental
+2- deberían tener menos de 20 lineas
+3- debo evitar el uso del "else"
+4- debo priorizar el uso de condicionales ternarios (ligado a la 3)
+
+            VIDEO 20 SOLUCIONES
+
+Interesante como le pasó la función que tira el error al objeto este estudiante:
+
+type fruitColor = "red" | "yellow" | "purple";
+function getFruitsByColor(color: ColorsAllowed | string): string[] | never {
+   const fruitByColor = {
+      red: ["manzana", "fresa"],
+      yellow: ["pina", "banana"],
+      purple: ["moras", "uvas"],
+      default: () => throw Error('....')
+   }
+   return fruitByColor[color] || fruitByColor.default();
+}
+
+La solucion tres de nuevo lo mejor era crear un objeto con los booleanos y buscar el negativo:
+
+const workSteps = {
+   first: true,
+   second: true,
+   third: true,
+   fourth: true
+}
+function workingSteps(){
+      let message = "Working properly!";
+  Object.keys(worksSteps).forEach((step => {
+      if(!workSteps[step]) message = `${step} step broken`
+  })
+      return message;
+}
+Me gusta mucho esta solución al tercero
+TIP: fijate que el return new Error simplemente retorna un error pero no lanza un error que pare la aplicación.No son lo mismo para nada return Error y throw Error
+
+TIP: otra opcion en el segundo hubiera sido una autoinvoked function:
+
+
+ return fruitsByColor[color]
+    ? fruitsByColor[color]
+    : (() => { throw new Error("error xungo")})();
+
+Me encantan estas dos soluciones.Incluso con el nullish operator me vale tmb!:
+return fruitsByColor[color] ??  (() => { throw new Error("error xungo"); })();
+Al loro con esa auto-invoked, esto es interesante
+
+                  VIDEO 21 PRINCIPIO DRY
+
+El principio DRY no es más que evitar tener duplicidad en nuestro código.Tiene ventajas como:
+
+1 - Simplifica las pruebas ( ya que solo tengo que testear la abstracción y no las dos o más implementaciones similares)
+2- Ayuda a centralizar procesos,haciendolos más fácil de mantener
+
+
+NOTA: Aplicar este principio usualmente lleva a refactorizar.
+
+TIP: para obtener las propiedades de una Clase tengo varias formas(segun haya sido instanciada ya o no).
+
+Object.getOwnPropertyNames(MyClass.prototype) <- sin instanciarla
+Object.keys(instance) <- de una clas ya instanciada,es decir, un obj
+
+Tmb puedo hacer lo mismo para sus métodos.Al final habia varias formas, como siempre, Fernando lo hizo con un for in,pero Object.entries(this) es más legible:
+
+  isProductReady(): boolean {
+    // clave el for key in this y saber que puedo hacer un switch sobre el typeof(esto es importante)Otra forma era con for(const [k,v] of Object.entries(this)).Pero clave es saber que tengo en this todo y que puedo hacer un switch(typeof loquesea)
+    for (const key in this) {
+      // daba igual mirar el type de la key o del value(con this[key])
+      switch (typeof key) {
+        case "string":
+          if ((this[key] as string).length <= 0) throw Error(`${key} is empty`);
+          break;
+        case "number":
+          if ((this[key] as number) <= 0) throw Error(`${key} is zero`);
+        default:
+          throw Error(`${typeof key} is not supported`);
+      }
+    }
+    return true; // si llega aqui es que todo fue bien y retornamos un true porque está listo
+  }
+
+                  SECCION 03 CLEAN CODE - CLASES POO Y COMENTARIOS
+
+En esta sección hablaremos principalmente sobre clases y conceptos generales para escribir un mejor código.
+
+Es importante tener presente que así como todo, hay excepciones a cada regla, pero esto debería ser un caso aislado y no el estándar. Tratemos de escribir un mejor código y dejar de lado la comodidad de hacer las cosas como se han venido haciendo, especialmente si esas cosas traen muchos problemas.
+
+            VIDEO 26 INTRODUCCIÓN A CLASES EN TS      
+
+
+Hay dos formas de crear una clase en Typescript.La forma larga es igual que en Java:
+
+  class Person {
+    public name: string;
+    public gender: Gender;
+    public birthdate: Date;
+
+    constructor(name: string, gender: Gender, birthdate: Date) {
+      this.name = name;
+      this.gender = gender;
+      this.birthdate = birthdate;
+    }
+  }
+
+  Sin embargo ahora es permitido definir el nivel de acceso en el constructor y olvidarse de la asignación:
+
+    // actualmente TS permite definir el nivel de acceso en el constructor(sea cual sea)y obviar la asignacion, ya hace por detrás el this.name = name
+  class Person {
+    constructor(
+      public name: string,
+      public gender: Gender,
+      public birthdate: Date
+    ){}
+
+Obviamente, teniendo la forma segunda no tiene ningun sentido que use la primera más.
+
+            VIDEO 27 HERENCIA - PROBLEMÁTICA
+
+La herencia entre clases es un problema, ya que cada clase que herede de otra se trae todo lo de la superclase.De esta forma podemos terminar con clases con demasiadas propiedades y responsabilidades:
+
+ class Person {
+    constructor(public name: string, public gender: Gender, public birthdate: Date) {}
+  }
+
+  // const newPerson = new Person("Fernando", "M", new Date("1985-10-21"));
+
+  class User extends Person {
+    // recuerda que cuando tenga una función o método con más de tres parametros(cómo este constructor) deberia mandar un objeto
+    private lastAccess: Date;
+    constructor(
+      public email: string,
+      public role: string,
+      public name: string,
+      public gender: Gender,
+      public birthdate: Date,
+    ) {
+      super(name, gender, birthdate);
+      this.lastAccess = new Date();
+    }
+
+    checkCredentials() {
+      return true;
+    }
+  }
+
+  class UserSettings extends User {
+    constructor(
+      public workingDirectory: string,
+      public lastOpenedFolder: string,
+      email: string,
+      role: string,
+      name: string,
+      gender: Gender,
+      birthdate: Date,
+    ) {
+      super(email, role, name, gender, birthdate);
+    }
+  }
+  const userSettings = new UserSettings(
+    "",
+    "",
+    "",
+    "",
+    "",
+    "F",
+    new Date("")
+  )
+
+Desde luego queda claro que estamos violando el principio de responsabilidad única.La última clase UserSettings sabe incluso la fecha nacimiento del usuario.Desde luego este tipo de herencia no parece una buena práctica.
+IMPORTANTE: siempre se debe priorizar la composición frente a la herencia( no usar class extends class)
+
+                  VIDEO 28 OBJETOS COMO PROPIEDADES
+
+Ya vimos en la clase anterior que el número de parámetros del constructor se vuelve inmantenible cuando les de valores a los argumentos en la llamada.Usar un objeto, que además me permita pasar propiedades de forma opcional,parece una gran primera mejora/refactorización.
+
+Asi pues lo primero sería crearse la interfaz que tipará el objeto:
+  interface PersonProps {
+    name: string;
+    gender: Gender;
+    birthdate: Date;
+  }
+
+  class Person {
+    
+    public name: string;
+    public gender: Gender;
+    public birthdate: Date;
+    
+    constructor({ name, gender, birthdate }: PersonProps) {
+      this.name = name;
+      this.gender = gender;
+      this.birthdate = birthdate;
+    }
+  }
+  Fijate que nos obligó a declarar las propiedaes, aunque cuando esté con subclases ya no tengo que declarar las propiedades del padre,solo pasarlas en el constructor:
+
+    class User extends Person {
+    public lastAccess: Date;
+    public email: string;
+    public role: string;
+
+    constructor({ birthdate, email, gender, name, role }: UserProps) {
+      super({ name, gender, birthdate });
+      this.email = email;
+      this.role = role;
+      this.lastAccess = new Date();
+    }
+Y la tercera clase luciria asi.Fijate que lo mejor era que las interfaces hereden:
+
+ interface UserSettingsProps extends UserProps {
+    lastOpenFolder: string;
+    workingDirectory: string;
+  }
+
+  class UserSettings extends User {
+    public workingDirectory: string;
+    public lastOpenFolder: string;
+
+    constructor({
+      name,
+      email,
+      role,
+      gender,
+      birthdate,
+      lastOpenFolder,
+      workingDirectory,
+    }: UserSettingsProps) {
+      super({ email, role, name, gender, birthdate });
+      this.lastOpenFolder = lastOpenFolder;
+      this.workingDirectory = workingDirectory;
+    }
+  }
+
+  const userMock: UserSettingsProps = {
+    name: "",
+    email: "",
+    role: "",
+    gender: "F",
+    birthdate: new Date("2001-01-01"),
+    lastOpenFolder: "",
+    workingDirectory: "",
+  };
+
+  const userSettings = new UserSettings(userMock);
+
+Sin embargo, seguimos violentando el principio de responsabilidad única,pero al menos usamos objetos como argumentos del constructor,algo que ayuda un poco con la legibilidad y comprensión
+
+            VIDEO 29 APLICANDO SINGLE RESPONSIBILITY
+
+
+Dado que voy a priorizar composición frente a herencia lo primero es borrar todos los extends.Tras realizar esto tendré tres clases que aplican el SRP,obviamente.
+
+
+TIP: al final lo que estamos buscando es tener propiedades de tipo  T.Si bien esta clase tiene acoplamiento, ha priorizado la composición y no la herencia.De aqui podemos ir a la inyección,etc:
+
+class UserSettings {
+    public person:Person;
+    public user: User;
+    public settings: Settings;
+}
+
+No usar extends, usar propiedades del tipo a heredar en la subclase.
+NOTA: de momento hay acoplamiento,pero al aplicar la inversión de dependencias reduciremos el acople que tenemos ahora
+
+Documentación sobre esto:
+https://www.udemy.com/course/solid-clean/learn/lecture/31684376#questions/17932034
+
+
+            VIDEO 30 TAREA - APLICAR SRP
+
+Fijate que usar objetos y tiparlos cuando son muchas propiedades tmb deja un código muy verboso.Tmb debo seguir analizando si crear las propiedades por composición o inyectarlas por constructor no es aún mejor lo segundo( Dependency Inversion ??)
+
+TIP: si hago un console.log del objeto window por ejemplo, puedo ver un objeto con un montón de propiedades "componiendo" el obj.Están aplicando el SRP, claro.Realmente es apreciable en todos lados
+
+          VIDEO 32 ESTRUCTURA RECOMENDADA DE UNA CLASE
+
+"El buen código parece estar desarrollado por alguién a quien le importa".Si bien Javascript es uno de los pocos lenguajes que prioriza trabajar con funciones a con clases,éstas siguen siendo muy usadas tmb.
+
+Este es un ejemplo de una clase:
+
+class HtmlElement {
+  
+  public static domReady: boolean = false; <- primero las propiedades estáticas
+  
+  public name: string; <- segundo las propiedades publicas
+  private _id: string;  <- tercero las privadas 
+  private type: string;
+  private updatedAt: number
+
+  static createInput(id:string){ <- cuarto constructores estáticos
+    return new HtmlInput(id,'input')
+  }
+
+  constructor(id:string,type:string){ <- quinto el constructor
+    this._id = id;
+    this.type = type;
+    this.updatedAt = Date.now();
+  }
+// aqui irian metodos estaticos > privados> resto ordenado por importancia > getters & setters
+  private blablabla(){} <
+  
+  setType(type:string){ <- sexto metodos estaticos,despues privados y despues el resto segun importancia,los getters y setter al final de todo
+    this.type= type
+  }
+}
+
+Lo más importante es que todo el equipo trabaje de una misma manera
+
+      VIDEO 33 COMENTARIOS EN EL CÓDIGO
+
+Como siempre,aplicar sentidiño!
+
+    VIDEO 34 UNIFORMIDAD EN EL CODIGO
+
+A problemas similares, soluciones similares( si en un lado llamamos createProduct luego no cambiar el naming por createNewUser,ie).Lo mismo para el naming de archivos, no solo las funciones,etc( por ejemplo si estoy creando siempre una carpeta y meto hay un ts y un html no cambiar eso,siempre crear carpeta + files,aunque solo tenga un TS)
+De nuevo, el sentido común me valdrá mucho.
+
+        SECCION 4 ACRONIMO STUPID
+
+Esta sección está enfocada en todo lo que no debería hacer.El acrónimo Stupid es una concatenación de un montón de antipatrones
+
+Las siglas del acrónimo Stupid hacen referencia a lo siguiente:
+
+Singleton: evitar patrón Singleton
+Tigh Coupling: alto acoplamiento
+Untestability: código no testable(unit test)
+Premature optimization: optimizaciones prematuras
+Indescriptive Naming: nombres poco descriptivos
+Duplication: duplicidad de código
+
+Como puedo observar no pueden tener más razón las siglas
+    
+        VIDEO 38 PATRON SINGLETON COMO ANTIPATRON 
+
+Como ventaja este patrón garantiza que solo haya una única instancia de clase a lo largo de toda la aplicación,entonces, por qué es considerado un code smell?
+
+1- Vive en el contexto global
+2- Puede ser modificado por cualquiera en cualquier momento
+3- No es rastreable
+4- Dificil de testear debido a su ubicación
+
+Fijate que Fernando provee un ejemplo usando funciones:
+
+const Singleton = (function(){
+  let instance:any;
+  function createInstance(){
+    return new Object("I am the instance");
+  }
+  return {
+    getInstance(){
+      if(!instance){
+        instance = createInstance();
+      }
+      return instance;
+    }
+  }
+})();
+function main(){
+  const instance1 = Singleton.getInstance();
+  const instance2 = Singleton.getInstance();
+  console.log("Misma instancia?:",(instance1 === instance2))
+}
+main()
+
+Fijate que devuelve la misma instancia.El problema que ven es? donde está esto? como lo testeo? Desde luego se ve que tiene ventajas e inconvenientes importantes
+
+Una alternativa común a singleton es el uso de Inyección de Dependencias, que implica pasar las instancias necesarias como argumentos a través de constructores o métodos.Esto promueve una mejor separación de preocupaciones y facilita el cambio de implementaciones.
+
+Otras alternativas incluyen el uso de patrones como Factory o Abstract Factory para crear instancias controladas, asi como el uso de ámbitos de gestión de instancias en frameworks de inyección de dependencias.
+Estas alternativas me pueden ayudar a reducir el acoplamiento y mejorar la flexibilidad de mi código
+
+      VIDEO 39 ACOPLAMIENTO Y COHESIÓN
+
+Lo ideal siempre es tener bajo acoplamiento y buena cohesión.Si tengo un alto acoplamiento voy a tener como desventajas:
+
+Un cambio en un módulo por lo general provoca un efecto dominó de los cambios en otros módulos
+
+El ensamblaje de módulos puede requerir más esfuerzo y/o tiempo debido a la mayor dependencia entre módulos
+
+Un módulo en particular puede ser más difícil de reutilizar y/o probar porque se deben incluir modulos dependientes
+
+Fijate que la arquitectura hexagonal diria que mantiene el acoplamiento al minimo.
+
+Como ejemplos de alto acoplamiento:
+1- La clase A tiene un atributo que se refiere a la clase B
+2- la clase A llama a los servicios de la clase B
+3- A tiene un método que hace referencia a B(a través de un parámetro o el tipo de retorno inclus)
+4- A es una subclase de B
+
+Como desarrollador siempre querré diseñar componentes que sean autocontenidos, autosuficientes e independientes.Con un objetivo y un propósito bien definido(componente puede ser una clase,un módulo,etc)
+
+La cohesión se refiere a lo que la clase o módulo puede hacer.
+
+Una baja cohesión significa que la clase o móduo realiza una gran variedad de acciones, es amplia, no se enfoca en lo que debe de hacer únicamente
+Una alta cohesión significa que la clase o módulo sólo se enfoca en lo que debería estar haciendo(SRP),los métodos solo hacen cosas que tienen que ver con la intención de la clase
+
+Cuando decimos que lo ideal estener un bajo acoplamiento y una buena cohesión nos referimos a el grado de dependencia entre clases o modulos que tienen.
+Cuando tenga bajo acoplamiento cambiar una clase no debería afectar a la otra
+Cuando tenga alto acoplamiento los cambios pueden requerir incluso una renovación completa del sistema, las clases estarán muy unidas y los cambios y el mantenimiento del código serán complicados
+
+De nuevo un buen diseño de software tiene una alta cohesión(nadie hace más de lo que debe ) y un bajo acoplamiento(las relaciones a otras clases/módulos serán las minimas posibles, su ubicación será muy clara(constructor/inyección dependencias) y serán las minimas posibles!)
+
+      VIDEO 40 BAJO ACOPLAMIENTO Y ALTA COHESIÓN
+
+Veamos lo anterior usando un ejemplo en código.Es el mismo de antes.
+Loose: suelto
+to lose: perder
+tight:ajustado (contrario a loose)
+contained=contenido
+tight profits= beneficios ajustados
+
+        VIDEO 41 CODE SMELLS ADICIONALES
+
+Ya hemos visto la S(Singleton) y la T(Tigh Coupling) del acrónimo Stupid.Es turno de las siguientes siglas:
+U: Untestability
+P: Premature Optimization
+I: Indescriptive Naming
+D: Duplication
+
+Untestability:
+Cuando estamos hablando de Codigo no testeable suele ser por un alto acoplamiento en nuestros modulos, o con muchas dependencias no inyectadas por constructor.Al no tener una manera sencilla de inyectar la dependencia se hace muy dificil de probar ese código
+Tmb el tener dependencias en el contexto global(por ejemplo, poner un Singleton en un punto muy alto)
+
+En resumen, hay que tener en mente que el código debe ser testeable
+
+Premature optimization
+Mantener abiertas las opciones retrasando la toma de decisiones nos permite darle mayor relevancia a lo que es más importante en una aplicación(que son las reglas de negocio)
+El simple echo de retrasar esta decisión me permitirá tener más contexto sobre la aplicación
+No debemos anticiparnos a los requisitos y desarrollar abstracciones innecesarias que puedan añadir complejidad accidental.
+
+NOTA: hay varios tipos de complejidad, la complejidad esencial es la complejidad inherente a un problema,es inevitable, pero la accidental viene dada por el desarrollador al implementar una solución demasiado compleja.Siempre debe haber un balance entre ambas complejidades
+
+Indescriptive Naming:
+Usar nombres de variables mal nombrados,demasiado genéricos o especificos es muy común y debe tratar de tomar mi tiempo para el naming
+
+Duplicity:
+Simplemente seguir el principio DRY.Fijate que no aplicarlo me hará testear partes repetidas, pudiendo haber ahorrado ese tiempo
+Normalmente violentamos este principio cuando hacemos copia y pega
+Existen dos tipos de duplicidad: la real(que es la que hay que evitar pues la hacemos sabiendo que está mal sobre código idéntico) y la accidental, que se suele dar al tener código similar,pero no idéntico
+Un refactor puede ayudar con la accidental
+
+      VIDEO 42 OTROS CODE SMELLS
+
+Inflación: cuando un método contiene demasiadas líneas de código (hasta 20 lineas).Usualmente nunca se quita nada y se suelen agregar más lineas.
+Para corregir este code smell la solución es cortar ese método en submétodos más pequeños.Aunque el código llame a 5 métodos esto no tiene repercusión real en la performance
+
+Large class: una clase que hace muchas cosas(SRP) es algo muy común tmb.La solución es la misma, hay que sacar varias subclases para cada responsabilidad.De nuevo hay devs que piensan que afecta la performance pero si bien es cierto el impacto no es perceptible y el código es mucho más sencillo si está modularizado
+
+      VIDEO 43 ACOPLADORES
+
+Todos los code smells siguientes contribuyen al acoplamiento excesivo(de hay el nombre de acopladores) o muestran lo que sucede si el acoplamiento se reemplaza por una delegación excesiva
+
+1- Feature envy: un método/clase/módulo accede a los objetos/datos de otro método/clase/módulo más que a los propios suyos.
+La solución es que la función/clase etc debería estar en el otro lugar al que está accediendo y no donde esta
+
+2- Intimidad inapropiada: cuando una clase usa métodos internos etc de otra clase.Las clases deben de saber lo menos posible de otras clases.
+
+3- Cadenas de mensajes: en este caso en cuando una función/método/módulo etc que llama a A,A llama a B, B llama a C.Una cadena de mensajes se da cuando un cliente(un cliente es una función o alguien que haga la solicitud, o sea alguien que quiere algo) pide algo(un objeto).Ese objeto se lo pide a otro(luego hace de cliente tmb), y ese otro a otro más,etc.
+
+El cliente inicial pues depende de que toda la cadena funcione,además,cualquier cambio puede cambiar o romper toda la implementación.
+La forma para solventarlo es que el cliente A conecte con el punto final y no se dé esta cadena(o supongo que al menos haya solo un par de pasos intermedios,los mínimos posibles)
+
+4- The Middle Man: si una clase realiza solo una acción y esa acción la delega a otra clase nunca fue necesario que existiera esta clase, ya debió hacer ella la tarea.Este code smell se suele dar al quitar funcionalidad a una clase(por ejemplo tratando de solucionar las cadenas de mensajes podría terminar con una clase que solo hace una acción y la delega).
+
+TIP: en Java se usa mucho el patrón Facade,que es crear una clase con métodos que sólo llaman a métodos de otras clases,se usa para evitar inyectar muchas clases, inyectando solo la clase Facade(esto lo dice esta persona,a saber si es exactamente asi)
+
+      SECCION 5 PRINCIPIOS SOLID
+
+Los principios SOLID son recomendaciones para escribir un mejor código.Son principios, no reglas.Sin embargo como principios deberían ser seguidos siempre que se pueda,obviamente.
+S: single responsibility
+O/C: las clases deben estar abiertas a su extensión,pero cerradas a su modificación(agregar aqui priorizar composición frente a herencia)
+L: deberia de poder cambiar entre subclases(una subclase A debe poder ser intercambiable con una subclase B, como resultado entiendo que le paso la clse padre como parametro)
+I: Interface Segregation, como el nombre lo dice tenemos que segregar/delegar responsabilidades.Por ejemplo si tengo una subclase que me está heredando métodos que no necesita tengo que evitar esto(entiendo que refactorizando la padre).Aqui se genera deuda técnica, cambiar el padre podria cambiar la hija.Si una clase no necesita un método que le vino heredado estoy violentando el principio de segregación de interfaces. 
+D: la inversión de dependencias() trata de tener código oculto, o acoplado dentro de nuestras clases(me queda claro porque debia usar inyección por constructor antes)
+
+Cada principio básicamente cuenta de 3 partes, una exposición, un ejercicio y cómo detectar violaciones al principio, algunos son bastante obvios y otros tienen un poco más de complejidad, pero no dejen que los nombres los asusten, son fáciles de comprender con la práctica.
+
+Los 5 principios S.O.L.I.D. de diseño de software son:
+
+S – Single Responsibility Principle (SRP)
+O – Open/Closed Principle (OCP)
+L – Liskov Substitution Principle (LSP)
+I – Interface Segregation Principle (ISP)
+D – Dependency Inversion Principle (DIP)
+
+Y en esta sección hablaremos sobre cada uno de ellos.
+
+          VIDEO 47 SRP - EXPOSICION
+
+Si bien estos principios están muy orientados a Clases, se pueden aplicar a modulos,estructuras de archivos y funciones perfectamente.
+
+Una clase/módulo/componente,etc debería de tener una única responsabilidad.Una responsabilidad no es hacer una única cosa,puede hacer varias,pero con un único fin,entiendo
+
+          VIDEO 48 EJEMPLO DE SRP
+
+
