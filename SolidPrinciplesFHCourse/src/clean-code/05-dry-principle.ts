@@ -9,10 +9,10 @@ class Product {
       // daba igual mirar el type de la key o del value(con this[key])
       switch (typeof key) {
         case "string":
-          if ((this[key] as string).length <= 0) throw Error(`${key} is empty`);
+          if ((this[key] as unknown as string).length <= 0) throw Error(`${key} is empty`);
           break;
         case "number":
-          if ((this[key] as number) <= 0) throw Error(`${key} is zero`);
+          if ((this[key] as unknown as number) <= 0) throw Error(`${key} is zero`);
         default:
           throw Error(`${typeof key} is not supported`);
       }

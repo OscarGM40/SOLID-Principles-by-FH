@@ -1,5 +1,5 @@
 import './style.css'
-import './stupid-acronym/01-Singleton';
+import './solid/03-liskov-c(solution)';
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
