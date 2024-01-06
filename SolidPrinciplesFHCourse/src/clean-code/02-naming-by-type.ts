@@ -52,16 +52,16 @@
   }
 
   // obtiene libros desde un URL
-  function getBooksByUrl(url: string) {
+  function getBooksByUrl(_url: string) {
     throw new Error("Function not implemented.");
   }
 
   // obtiene el área de un cuadrado basado en sus lados
-  function areaCuadrado(s: number) {
+  function areaCuadrado(_s: number) {
     throw new Error("Function not implemented.");
   }
 
-  function getSquareArea(side: number) {
+  function getSquareArea(_side: number) {
     throw new Error("Function not implemented.");
   }
 

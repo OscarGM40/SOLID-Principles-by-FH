@@ -28,7 +28,7 @@
     console.log({ title, description, rating, cast });
   }
 
-  function findActorByName(fullName: string) {
+  function findActorByName(_fullName: string) {
     return true;
   }
   function createActor(fullName: string): boolean {

@@ -1,0 +1,158 @@
+       ALL GoF PATTERNS IN TYPESCRIPT (Udemy) by Sean Bradley
+
+His book is in https://sbcode.net/typescript with everything.
+In this course I will learn about the 23 design patterns published by the Gang of Four, which are the next:
+
+1 - Creational:
+  Factory
+  Abstract factory
+  Builder
+  Prototype
+  Singleton
+
+2 - Structural
+  Decorator
+  Adapter
+  Facade
+  Bridge
+  Composite
+  Flyweight
+  Proxy
+
+3 - Behavioral
+  Command
+  Chain of Responsibility
+  Observer Pattern
+  Interpreter
+  Iterator
+  Mediator
+  Memento
+  State
+  Strategy
+  Template
+  Visitor
+
+Creational: they abstract the instantiation process so that there is a logical separator between how objects are composed and finally represented
+
+Structural: this type of patterns focuses more on how classes and objets are composed using different structural techniques, and to form structures with more or altered flexibility( I supose it can be both as well)
+
+Behavioral: this patterns are concerned with the inner algorithms, process flow, the assignment of responsibilities and the intercommunication between objects( I realize that they look very important too)
+                     
+              VIDEO 01 SETTING UP ENVIRONMENT
+
+We install Node through their web,etc. See that I can type tsc.cmd -v in the PowerShell to skip the part about not having Execution Policies rights
+We will use VsCode as IDE as well 
+
+              VIDEO 02 COURSE CODE
+
+All the code is in the following url: https://github.com/Sean-Bradley/Design-Patterns-In-TypeScript
+
+              SECTION 02 TYPESCRIPT BASICS
+
+Javascript is a weakly typed language( which means that types are assigned implicity as they are used at runtime).See that they are even implicity assigned. By enforcing type safety we ensure that all usage of properties, functions and classes are consinstent within our application and as a result this makes applications more robust
+Typescript is a subset of JavaScript, so I can write JS in a TS file 
+
+              VIDEO 03 GETTING STARTED
+
+To compile any file we can use:
+
+>>tsc ./src/test.ts --outDir ./dist <- para compilar el src/test.ts
+
+And then we can execute the resulting JS with Node:
+
+>>node ./dist/test.js <- see that a file with the same original name will be produced
+
+Remember that Typescript cannot be executed,only compiled.It has to be the JS the one to be executed,via browser
+
+              VIDEO 04 ADDING A TSCONFIG.JSON
+
+Normally we dont' compile manually, we create a tsconfig anywhere( here in src/tsconfig.json) with the configuration options
+
+Now we can compile all the project with tsc -p route:
+>>tsc -p ./src <- it will compile everythin in .src which it is what we want
+
+See that by putting the tsconfig in a folder we can use multiple tsconfig files, the teacher point outs this to focus in this posibility/feature.Interesting
+
+"strict":true <- this flag ensures that all class properties are either assigned when first declared or in the constructor.It is a must.
+
+"target":"ES2015" <- the TS compiler will produce JavaScript that matches the selected standard.Given that private properties need ES2015 and above it is also a must use this standard or superiors
+
+NOTA: ES6 es una abreviatura para ES2015 y no es 2016??
+
+"module":"CommonJS" <- this type of module will produce output that relies on the popular RequireJS module loader that Node.js supports by default(al elegir el module eligo el cargador de modulos) This means that any JavaScript produced when compiling with TSC will work in Node.js in case my source Typescript code contains any ES6 imports/exports commands.Luego de nuevo es otro must
+
+outDir y rootDir son la ruta de salida del compiler y la de entrada
+
+"include":["**/*.ts"] <- esta regla especifica al compilador que archivos incluir, so we don't include testing or styling files,only ts files.Again a must
+
+Fijate que estas propiedades son obligatorias practicamente en todo proyecto, 
+
+       VIDEO 04 TSC WATCH COMMAND | WATCH MODE (-w at the end)
+
+Even if using tsc -p [folderPath] we can compile everything in that folder we have to execute with another command.We can set TS to recompile everytime a change occurs by using -w at the end
+
+>>tsc -p .src -w <- it will start watching mode so the script proccess won't end(watch mode)
+
+              VIDEO 05 COMMON TYPES
+
+There are quite common types that we use in every project such as:
+
+String
+Boolean
+Number
+Array
+Dictionary
+Tuple
+Set 
+
+To declare them I have to use let/const.Remember that let enables reassignation whilst const don't.
+At the same time if I can declare a variable in a closer scope I have to:
+{
+       let age = 45;
+       ** do something with the variable
+}
+let age = 45; 
+{
+       ** do something here only
+}
+always reduce the scope to the minimal required to the life of the var
+
+              VIDEO 07 COMMON TYPES
+
+Fijate que una tupla es un arreglo de una longitud determinada,nada más:
+let foo: string;
+let bar: boolean;
+let baz: number;
+let qux: string[];
+// a touple is an array of a determined length, so it has to be an array of 2 positions,with those types.Could be useful
+let quuz: [number, string];
+let corge: { [key:number]: string};
+let grault: Set<number>;
+
+foo = 'ABC';
+bar = true;
+baz = 123;
+qux = ['a','b','c','d'];
+quuz = [1,'abc']
+corge = {123:'abc',345:'gasd'};
+grault= new Set([1,2,3,4,4])
+
+Obviamente su uso es super reducido pero podria ser interesante declarar un arreglo de una longitud especifica que ha de llenarse con los tipos dados además
+
+NOTE: see that I can type an array as unkown to avoid the compiling error when using any
+
+let a: any[] <- not allowed
+let b: unkown[]  <- probably allowed, avoiding eslint/tsconfig rules
+
+Remember that an array is an object
+
+
+Abstract Factory: use it when => 
+1- u want to provide a library of relative similar products from multiple factories
+2- u want the system to be independent of how the products are created
+3- u want to enforce consistent interfaces across products(dado que uniré las interfaces deberían ser cosas parecidas, esto es posible que se pueda mejorar u obviar)
+4- u want the possibility to exchange product families(dado que todos implementan la misma interfaz al final puedo intercambiar instancias)
+
+Es una factoria de otros patrones creacionales,y es el cliente el que mediante la abstract factory elige producto entre las familias
+o
+

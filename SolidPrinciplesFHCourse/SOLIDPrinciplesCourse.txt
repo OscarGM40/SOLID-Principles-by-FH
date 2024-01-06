@@ -174,7 +174,7 @@ function getFruitsByColor(color: ColorsAllowed | string): string[] | never {
       default: () => throw Error('....')
    }
    return fruitByColor[color] || fruitByColor.default();
-}
+} esto lo suelen hacer en OB,ahondar mas en esto
 
 La solucion tres de nuevo lo mejor era crear un objeto con los booleanos y buscar el negativo:
 
@@ -185,7 +185,7 @@ const workSteps = {
    fourth: true
 }
 function workingSteps(){
-      let message = "Working properly!";
+  let message = "Working properly!";
   Object.keys(worksSteps).forEach((step => {
       if(!workSteps[step]) message = `${step} step broken`
   })
@@ -205,13 +205,12 @@ Me encantan estas dos soluciones.Incluso con el nullish operator me vale tmb!:
 return fruitsByColor[color] ??  (() => { throw new Error("error xungo"); })();
 Al loro con esa auto-invoked, esto es interesante
 
-                  VIDEO 21 PRINCIPIO DRY
+                VIDEO 21 PRINCIPIO DRY
 
 El principio DRY no es más que evitar tener duplicidad en nuestro código.Tiene ventajas como:
 
 1 - Simplifica las pruebas ( ya que solo tengo que testear la abstracción y no las dos o más implementaciones similares)
 2- Ayuda a centralizar procesos,haciendolos más fácil de mantener
-
 
 NOTA: Aplicar este principio usualmente lleva a refactorizar.
 
@@ -239,7 +238,7 @@ Tmb puedo hacer lo mismo para sus métodos.Al final habia varias formas, como si
     return true; // si llega aqui es que todo fue bien y retornamos un true porque está listo
   }
 
-                  SECCION 03 CLEAN CODE - CLASES POO Y COMENTARIOS
+          SECCION 03 CLEAN CODE - CLASES POO Y COMENTARIOS
 
 En esta sección hablaremos principalmente sobre clases y conceptos generales para escribir un mejor código.
 
@@ -327,9 +326,9 @@ La herencia entre clases es un problema, ya que cada clase que herede de otra se
   )
 
 Desde luego queda claro que estamos violando el principio de responsabilidad única.La última clase UserSettings sabe incluso la fecha nacimiento del usuario.Desde luego este tipo de herencia no parece una buena práctica.
-IMPORTANTE: siempre se debe priorizar la composición frente a la herencia( no usar class extends class)
+IMPORTANTE: siempre se debe priorizar la composición frente a la herencia( no usar class extends class) <- recuerda que además debo priorizar la herencia sobre la modificacion(open closed principle)
 
-                  VIDEO 28 OBJETOS COMO PROPIEDADES
+        VIDEO 28 OBJETOS COMO PROPIEDADES
 
 Ya vimos en la clase anterior que el número de parámetros del constructor se vuelve inmantenible cuando les de valores a los argumentos en la llamada.Usar un objeto, que además me permita pasar propiedades de forma opcional,parece una gran primera mejora/refactorización.
 
@@ -404,12 +403,11 @@ Y la tercera clase luciria asi.Fijate que lo mejor era que las interfaces herede
   const userSettings = new UserSettings(userMock);
 
 Sin embargo, seguimos violentando el principio de responsabilidad única,pero al menos usamos objetos como argumentos del constructor,algo que ayuda un poco con la legibilidad y comprensión
+Fijate como usaron esto en las clases para el Polling y el Socket
 
             VIDEO 29 APLICANDO SINGLE RESPONSIBILITY
 
-
 Dado que voy a priorizar composición frente a herencia lo primero es borrar todos los extends.Tras realizar esto tendré tres clases que aplican el SRP,obviamente.
-
 
 TIP: al final lo que estamos buscando es tener propiedades de tipo  T.Si bien esta clase tiene acoplamiento, ha priorizado la composición y no la herencia.De aqui podemos ir a la inyección,etc:
 
@@ -528,6 +526,7 @@ Una alternativa común a singleton es el uso de Inyección de Dependencias, que 
 
 Otras alternativas incluyen el uso de patrones como Factory o Abstract Factory para crear instancias controladas, asi como el uso de ámbitos de gestión de instancias en frameworks de inyección de dependencias.
 Estas alternativas me pueden ayudar a reducir el acoplamiento y mejorar la flexibilidad de mi código
+Interesante ambas soluciones al posible antipatron.
 
       VIDEO 39 ACOPLAMIENTO Y COHESIÓN
 
@@ -537,7 +536,7 @@ Un cambio en un módulo por lo general provoca un efecto dominó de los cambios 
 
 El ensamblaje de módulos puede requerir más esfuerzo y/o tiempo debido a la mayor dependencia entre módulos
 
-Un módulo en particular puede ser más difícil de reutilizar y/o probar porque se deben incluir modulos dependientes
+Un módulo en particular puede ser más difícil de reutilizar y/o probar porque se deben incluir modulos dependientes 
 
 Fijate que la arquitectura hexagonal diria que mantiene el acoplamiento al minimo.
 
@@ -552,7 +551,10 @@ Como desarrollador siempre querré diseñar componentes que sean autocontenidos,
 La cohesión se refiere a lo que la clase o módulo puede hacer.
 
 Una baja cohesión significa que la clase o móduo realiza una gran variedad de acciones, es amplia, no se enfoca en lo que debe de hacer únicamente
+
 Una alta cohesión significa que la clase o módulo sólo se enfoca en lo que debería estar haciendo(SRP),los métodos solo hacen cosas que tienen que ver con la intención de la clase
+
+De aqui que lo mejor es tener una alta cohexion(una buena cohexión...) y un bajo acoplamiento en mis funciones clases y modulos.
 
 Cuando decimos que lo ideal estener un bajo acoplamiento y una buena cohesión nos referimos a el grado de dependencia entre clases o modulos que tienen.
 Cuando tenga bajo acoplamiento cambiar una clase no debería afectar a la otra
@@ -622,15 +624,20 @@ La forma para solventarlo es que el cliente A conecte con el punto final y no se
 
 4- The Middle Man: si una clase realiza solo una acción y esa acción la delega a otra clase nunca fue necesario que existiera esta clase, ya debió hacer ella la tarea.Este code smell se suele dar al quitar funcionalidad a una clase(por ejemplo tratando de solucionar las cadenas de mensajes podría terminar con una clase que solo hace una acción y la delega).
 
-TIP: en Java se usa mucho el patrón Facade,que es crear una clase con métodos que sólo llaman a métodos de otras clases,se usa para evitar inyectar muchas clases, inyectando solo la clase Facade(esto lo dice esta persona,a saber si es exactamente asi)
+TIP: en Java se usa mucho el patrón Facade,que es crear una clase con métodos que sólo llaman a métodos de otras clases,se usa para evitar inyectar muchas clases, inyectando solo la clase Facade
 
-      SECCION 5 PRINCIPIOS SOLID
+          SECCION 5 PRINCIPIOS SOLID
 
 Los principios SOLID son recomendaciones para escribir un mejor código.Son principios, no reglas.Sin embargo como principios deberían ser seguidos siempre que se pueda,obviamente.
-S: single responsibility
+
+S: single responsibility:una clase deberia tener una única responsabilidad y no varias(relacionado con la cohexión, buena cohexión,pocas responsabilidades??)
+
 O/C: las clases deben estar abiertas a su extensión,pero cerradas a su modificación(agregar aqui priorizar composición frente a herencia)
-L: deberia de poder cambiar entre subclases(una subclase A debe poder ser intercambiable con una subclase B, como resultado entiendo que le paso la clse padre como parametro)
+
+L: deberia de poder cambiar entre subclases(una subclase A debe poder ser intercambiable con una subclase B, como resultado entiendo que le paso la clase padre como parametro,azi es asinto)
+
 I: Interface Segregation, como el nombre lo dice tenemos que segregar/delegar responsabilidades.Por ejemplo si tengo una subclase que me está heredando métodos que no necesita tengo que evitar esto(entiendo que refactorizando la padre).Aqui se genera deuda técnica, cambiar el padre podria cambiar la hija.Si una clase no necesita un método que le vino heredado estoy violentando el principio de segregación de interfaces. 
+
 D: la inversión de dependencias() trata de tener código oculto, o acoplado dentro de nuestras clases(me queda claro porque debia usar inyección por constructor antes)
 
 Cada principio básicamente cuenta de 3 partes, una exposición, un ejercicio y cómo detectar violaciones al principio, algunos son bastante obvios y otros tienen un poco más de complejidad, pero no dejen que los nombres los asusten, son fáciles de comprender con la práctica.
@@ -653,4 +660,317 @@ Una clase/módulo/componente,etc debería de tener una única responsabilidad.Un
 
           VIDEO 48 EJEMPLO DE SRP
 
+Si vemos el ejemplo del gist que proporciona Fernando podemos ver que la clase guarda un producto, manda correos a los clientes e incluso lo añade al carrito
+Habria que refactorizar etc, y usar inyección de dependecias para poder usar sustitución de Liskov.
+Ver ejemplo,etc
 
+        VIDEO 49 DETECTAR INCUMPLIMIENTO DE SRP
+
+Si el naming de una clase o módulo es demasiado genérico
+Si cambios en el código suelen afectar a esa clase/módulo
+La clase involucra varias capas
+Numero elevado de importaciones(esto puede ser relativo,no es determinante per sé)
+Cantidad elevada de métodos públicos(si fuera asi seguramente hace demasiadas cosas)
+Demasiadas lineas de código (de nuevo es relativo,podriamos no estar rompiendo el SRP)
+
+      VIDEO 51 OCP Open /Close Principle
+
+Este principio establece que las entidades de software(clases, módulos,métodos,etc) deben estar abiertas para su extensión, pero cerradas para su modificación.(Fijate que al final es mejor usar el término entidades de software)
+
+Este principio depende mucho del contexto(framework,etc).Este principio se puede lograr de muchas maneras, argumentos extra en funciones, el uso de herencia o mediante patrones de diseño de composición como el patrón strategy
+
+    VIDEO 52 EJERCICIO OCP
+Fijate que el ejemplo refleja muy bien como un posible cambio futuro de fetcher haria cambiar(o sea modificar) todas estas clases.Las entidades de software deben estar cerradas para su modificacion y abiertas para su extension.
+
+El código inicial es asi.Se ve perfectamente que tenemos la dependencia de axios contaminando el código en cada clase:
+
+import axios from "axios";
+
+export class TodoService {
+  async getTodoItems() {
+    const { data } = await axios.get("https://jsonplaceholder.typicode.com/todos/");
+    return data;
+  }
+}
+
+export class PostService {
+  async getPosts() {
+    const { data } = await axios.get("https://jsonplaceholder.typicode.com/posts");
+    return data;
+  }
+}
+
+export class PhotosService {
+  async getPhotos() {
+    const { data } = await axios.get("https://jsonplaceholder.typicode.com/photos");
+    return data;
+  }
+}
+
+Recuerda que este principio lo que dice es que si tengo que las clases deberian quedar cerradas para su modificacion,y si tuviera que hacer algo lo tendria que hacer por extensión( aparte tenemos el problema de la fuerte dependencia con axios)
+
+Si ahora  quisieramos cambiar axios por fetch tendriamos que entrar a la clase y modificarla, es esto lo que queremos evitar.Fijate que la clave está en ponernos en medio de la dependencia, crear otra clase que exponga el get,put ,post etc que llamaremos HttpClient,etc:
+
+import axios from "axios";
+
+export class HttpClient {
+  async get(url:string){ç
+  const { data, status } = await axios.get(url);
+  }
+}
+
+Y ahora la inyectamos por constructor.De esta forma las clases con los casos de uso ya no tienen la implementación en ella.Aqui tmb tenemos el concepto de inyeccion de dependencias
+
+export class TodoService {
+  constructor(private readonly httpClient: HttpClient) {}
+  
+  async getTodoItems() {
+    const { data } = await this.httpClient.get("https://jsonplaceholder.typicode.com/todos/");
+    return data;
+  }
+}
+
+Fijate que esto es lo que se hará al definir por ejemplo Amiga.Un paso más sería incluso crear una interfaz con posibles varias implementaciones e inyectar esa interfaz en vez de la implementación.Fijate tmb que entender esto es super sencillo y algo básico tmb
+
+        VIDEO 53 REMOVER LA DEPENDENCIA DE AXIOS
+
+En este video vemos como sería cambiar axios por fetch
+
+      VIDEO 54 DETECTAR VIOLACIONES DEL OPC
+
+Pueden ser indicativos de que estamos violentando este principio:
+1- Cambios normalmente afectan a nuestra clase o módulo
+2- Cuando una clase o módulo afecta muchas capas(fijate que esto fue el indicativo, afectaba a arquitectura y a aplicación la clase anterior).Seguramente tmb esté violando el SRP
+
+      VIDEO 55 PRINCIPIO DE SUSTITUCION DE LISKOV
+
+Las funciones que utilicen punteros o referencias a clases base deben ser capaces de usar objetos de clases derivadas sin saberlo (Robert C.Martin).Fijate que este principio está intimamente ligado con el polimorfismo
+
+Es decir la clase Base seria Vehicle y las clases derivadas Audi,Toyota,Honda,etc.Al sumarle el polimorfismo cada una de las clases derivadas responderá con el comportamiento determinado( cars.map(car => car.getNumberOfSeats());
+
+ La doctora Barbara Liskov es la creadora de este principio(recibió el premio Turing en 2008, que es como el Nobel de informática).
+Siendo U un subtipo de T, cualquier instancia de T debería poder ser sustituida por cualquier instancia de U sin alterar las propiedades del sistema.
+
+En resumen deberia ser capaz de cambiar entre instancias de la subclase y su superclase(U y T) sin que se presenten comportamientos inesperados.Y entre instancias de la subclase.Me quedo con lo primero,las funciones que utilizen punteros o referencias a clases base deben ser capaces de usar objetos de clases derivadas sin saberlo
+
+En mi opinión parece que se refiere sobre todo a que al los métodos de las implementaciones de las subclases cambien solos segun sea una u otra,etc(o sea al polimorfismo)O al menos es lo que se quiere lograr,usar polimorfismo:
+
+export abstract class HttpClient {
+  abstract get(url:string):Promise<any>;
+  // resto de verbos
+}
+
+export class AxiosClient extends HttpClient {
+   async get(url: string) {
+    const { data, status } = await axios.get(url);
+    return { data, status };
+  } 
+  // seguiriamos con el resto de verbos
+
+}
+
+export class FetchClient extends HttpClient {
+     async get(url: string) {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      return { data: data, status: resp.status };
+    } 
+}
+
+Aunque supongo que se refiere a todo,etc investigar más
+
+        VIDEO 56 PRACTICAS CON EL LSP
+
+Si analizamos este código vemos que violenta el principio de sustitucion de Liskov (aparte del Open Closed):
+import { Tesla, Audi, Toyota, Honda } from "./03-liskov-b";
+
+(() => {
+  const printCarSeats = (cars: (Tesla | Audi | Toyota | Honda)[]) => {
+    for (const car of cars) {
+      if (car instanceof Tesla) {
+        console.log("Tesla", car.getNumberOfTeslaSeats());
+        continue;
+      }
+      if (car instanceof Audi) {
+        console.log("Audi", car.getNumberOfAudiSeats());
+        continue;
+      }
+      if (car instanceof Toyota) {
+        console.log("Toyota", car.getNumberOfToyotaSeats());
+        continue;
+      }
+      if (car instanceof Honda) {
+        console.log("Honda", car.getNumberOfHondaSeats());
+        continue;
+      }
+    }
+  };
+
+  const cars = [new Tesla(7), new Audi(2), new Toyota(5), new Honda(5)];
+
+  printCarSeats(cars);
+})();
+
+Las clases lucirian asi:
+export class Tesla {
+  constructor(private numberOfSeats: number) {}
+
+  getNumberOfTeslaSeats() {
+    return this.numberOfSeats;
+  }
+}
+
+export class Audi {
+  constructor(private numberOfSeats: number) {}
+
+  getNumberOfAudiSeats() {
+    return this.numberOfSeats;
+  }
+}
+
+export class Toyota {
+  constructor(private numberOfSeats: number) {}
+
+  getNumberOfToyotaSeats() {
+    return this.numberOfSeats;
+  }
+}
+
+export class Honda {
+  constructor(private numberOfSeats: number) {}
+
+  getNumberOfHondaSeats() {
+    return this.numberOfSeats;
+  }
+}
+
+      VIDEO 57 SOLUCION APLICANDO LISKOV
+
+Simplemente sacamos una abstracción que oblique a definir en cada clase derivada los comportamientos y caracteristicas deseadas y por polimorfismo al llamar al de la super clase se cambiará por un subtipo si este existe.
+
+export abstract class Vehicle {
+  abstract getNumberOfSeats(): number;
+}
+
+export class Tesla extends Vehicle {
+  constructor(private numberOfSeats: number) {
+    super();
+  }
+
+  getNumberOfSeats(): number {
+    return this.numberOfSeats;
+  }
+}
+
+interface Vehiculo {
+  getNumberOfSeats(): number;
+}
+
+export class Audi implements Vehiculo {
+  constructor(private numberOfSeats: number) {}
+  getNumberOfSeats(): number {
+    return this.numberOfSeats;
+  }
+}
+
+export class Toyota implements Vehiculo {
+  constructor(private numberOfSeats: number) {}
+  getNumberOfSeats(): number {
+    return this.numberOfSeats;
+  }
+}
+
+export class Honda implements Vehiculo {
+  constructor(private numberOfSeats: number) {}
+  getNumberOfSeats(): number {
+    return this.numberOfSeats;
+  }
+}
+
+** Ojo con el Vehicle[] que es un arreglo del supertipo
+const cars: Vehicle[] = [new Tesla(7),new Audi(2),new Toyota(5),new Honda(8)]
+cars.map(car => console.log(car.constructor.name, car.getNumberOfSeats()));
+
+Simplemente es crear una clase abstracta o interface.Dado que puedo usar ambas opciones y las interfaces no compilan a código puede ser mejor opción usar la interface, además no necesitaría la llamada al método super().Por otro lado con una clase abstracta podria inyectar comportamiento predeterminado
+
+    VIDEO 58 PRINCIPIO SEGREGACION DE LAS INTERFACES (ISP)
+
+Los clientes no deberian estar obligados a depender de interfaces que no utilizen (Robert C. Martin) De nuevo esto se ve mejor en lenguajes fuertemente tipado
+
+Por ejemplo, una clase Persona no deberia tener un método volar() ya que no puede,por ejemplo al haber heredado una interface incorrectamente.
+Esta clase Persona se vería afectada por cualquier cambio en esa interface,cuando ni siquiera puede usar ese método
+
+        VIDEO 59 PRACTICA SEGREGACION DE INTERFACES
+
+Partiendo de que tuvieramos dos clases con estos comportamientos queda bien claro que podemos usar una interface:
+
+class Tucan {
+
+  public fly(){}
+  public eat(){}
+  public run(){}
+}
+
+class Hummingbird {
+  public eat(){}
+  public fly(){}
+}
+
+Sin embargo la interface no podria tener ese metodo run,pues se lo va a pasar a todos los clientes:
+interface Bird {
+  fly():void;  
+  eat():void;  
+  run():void;  
+}
+
+class Tucan implements Bird { 
+  public fly(){}
+  public eat(){}
+  public run(){}
+}
+
+class Hummingbird implements Bird{
+  public eat(){}
+  public fly(){}
+  public run(){}
+}
+Y Hummingbird no debería estar obligado a implementar un método que no va a usar.Y si implementaramos otro cliente de esta interfaz para un avestruz estamos igual, pues no pueden volar:
+
+class Ostrich implements Bird {
+  public eat() {}
+  public fly() {}
+  public run() {}
+}
+
+La solución obviamente es crear varias interfaces,segregando el comportamiento necesario en cuantas interfaces sea necesario(de ahi el nombre de segregacion de interfacse) e ir adicionando ese comportamiento en base a los clientes que lo necesiten:
+
+interface IBird {
+  fly(): void;
+  eat(): void;
+}
+
+interface CanRun {
+  run(): void;
+}
+
+interface CanSwim {
+  swim(): void;
+}
+
+class ITucan implements IBird, CanRun {
+  fly(): void {}
+  eat(): void {}
+  run(): void {}
+}
+
+class IHummingbird implements IBird {
+  fly(): void {}
+  eat(): void {}
+}
+
+class IOstrich implements IBird, CanRun, CanSwim {
+  fly(): void {}
+  eat(): void {}
+  run(): void {}
+  swim(): void {}
+}
